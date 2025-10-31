@@ -1,73 +1,92 @@
-# Laporan Praktikum Minggu 1 (sesuaikan minggu ke berapa?)
-Topik: [Tuliskan judul topik, misalnya "Class dan Object"]
+# Laporan Praktikum Minggu 3
+Topik: Inheritance (Kategori Produk)
 
 ## Identitas
-- Nama  : [Nama Mahasiswa]
-- NIM   : [NIM Mahasiswa]
-- Kelas : [Kelas]
+- Nama  : Risky Dimas Nugroho
+- NIM   : 240202882
+- Kelas : 3IKRB
 
 ---
 
 ## Tujuan
-(Tuliskan tujuan praktikum minggu ini.  
-Contoh: *Mahasiswa memahami konsep class dan object serta dapat membuat class Produk dengan enkapsulasi.*)
+- Mahasiswa mampu **menjelaskan konsep inheritance (pewarisan class)** dalam OOP.  
+- Mahasiswa mampu **membuat superclass dan subclass** untuk produk pertanian.  
+- Mahasiswa mampu **mendemonstrasikan hierarki class** melalui contoh kode.  
+- Mahasiswa mampu **menggunakan `super` untuk memanggil konstruktor dan method parent class**.  
+- Mahasiswa mampu **membuat laporan praktikum** yang menjelaskan perbedaan penggunaan inheritance dibanding class tunggal.  
 
 ---
 
 ## Dasar Teori
-(Tuliskan ringkasan teori singkat (3–5 poin) yang mendasari praktikum.  
-Contoh:  
-1. Class adalah blueprint dari objek.  
-2. Object adalah instansiasi dari class.  
-3. Enkapsulasi digunakan untuk menyembunyikan data.)
+Inheritance adalah mekanisme dalam OOP yang memungkinkan suatu class mewarisi atribut dan method dari class lain.  
+- **Superclass**: class induk yang mendefinisikan atribut umum.  
+- **Subclass**: class turunan yang mewarisi atribut/method superclass, dan dapat menambahkan atribut/method baru.  
+- `super` digunakan untuk memanggil konstruktor atau method superclass.  
 
 ---
 
 ## Langkah Praktikum
-(Tuliskan Langkah-langkah dalam prakrikum, contoh:
-1. Langkah-langkah yang dilakukan (setup, coding, run).  
-2. File/kode yang dibuat.  
-3. Commit message yang digunakan.)
+1. **Membuat Superclass Produk**  
+   - Gunakan class `Produk` dari Bab 2 sebagai superclass.  
+
+2. **Membuat Subclass**  
+   - `Benih.java` → atribut tambahan: varietas.  
+   - `Pupuk.java` → atribut tambahan: jenis pupuk (Urea, NPK, dll).  
+   - `AlatPertanian.java` → atribut tambahan: material (baja, kayu, plastik).  
+
+3. **Membuat Main Class**  
+   - Instansiasi minimal satu objek dari tiap subclass.  
+   - Tampilkan data produk dengan memanfaatkan inheritance.  
+
+4. **Menambahkan CreditBy**  
+   - Panggil class `CreditBy` untuk menampilkan identitas mahasiswa.  
+
+5. **Commit dan Push**  
+   - Commit dengan pesan: `week3-inheritance`.  
 
 ---
 
 ## Kode Program
-(Tuliskan kode utama yang dibuat, contoh:  
-
 ```java
-// Contoh
-Produk p1 = new Produk("BNH-001", "Benih Padi", 25000, 100);
-System.out.println(p1.getNama());
+        Pupuk p = new Pupuk("PPK-101", "Pupuk Urea", 350000, 40, "Urea");
+        AlatPertanian a = new AlatPertanian("ALT-501", "Cangkul Baja", 90000, 15, "Baja");
+
+        System.out.println("------------------------------------");
+        System.out.println(b.deskripsi());
+
+        System.out.println("------------------------------------");
+        System.out.println(p.deskripsi());
+        
+        System.out.println("------------------------------------");
+        System.out.println(a.deskripsi());
+
+        CreditBy.print("240202882", "Risky Dimas Nugroho");
 ```
-)
 ---
 
 ## Hasil Eksekusi
-(Sertakan screenshot hasil eksekusi program.  
-![Screenshot hasil](screenshots/hasil.png)
-)
+![Screenshot hasil](oop-202501-240202882/praktikum/week3-inheritance/screenshots/week3-inheritance.png)
 ---
 
 ## Analisis
-(
-- Jelaskan bagaimana kode berjalan.  
-- Apa perbedaan pendekatan minggu ini dibanding minggu sebelumnya.  
-- Kendala yang dihadapi dan cara mengatasinya.  
-)
+- Pewarisan Berhasil: Benih, Pupuk, dan AlatPertanian berhasil mendapatkan data dasar produk (kode, harga, stok) dari kelas Produk. Ini membuat kita tidak perlu menulis ulang kode data dasar di setiap kelas.
+- Sifat Unik: Setiap kelas anak sukses menambahkan informasi unik mereka (misalnya, Pupuk punya Jenis).
+- Efisiensi: Dibandingkan membuat tiga kelas yang berdiri sendiri, penggunaan Inheritance membuat kode lebih rapi, terpusat, dan mudah diubah. 
+- Kode Jadi Lebih efisien dibanding Minggu lalu, Yang harus menulis detail produk yang sama (misalnya, harga dan stok) berulang kali di setiap jenis produk. Sekarang, berkat Inheritance, detail itu cukup ditulis sekali di kelas Produk lalu diwariskan ke semua anak. Ini membuat kode jauh lebih efisien.
 ---
 
 ## Kesimpulan
-(Tuliskan kesimpulan dari praktikum minggu ini.  
-Contoh: *Dengan menggunakan class dan object, program menjadi lebih terstruktur dan mudah dikembangkan.*)
-
+- Inheritance sangat berguna untuk membuat program jadi efisien karena mengurangi pengulangan kode.
+- Teknik ini memungkinkan kita mengembangkan sistem (misalnya, menambah jenis produk baru) tanpa merusak atau mengubah kode inti. 
 ---
 
 ## Quiz
-(1. [Tuliskan kembali pertanyaan 1 dari panduan]  
-   **Jawaban:** …  
+1. **Apa keuntungan menggunakan inheritance dibanding membuat class terpisah tanpa hubungan?**  
+   **Jawaban:** Kode jadi lebih hemat dan mudah dikelola (reusable), karena semua sifat umum cukup ditulis sekali di kelas induk. 
 
-2. [Tuliskan kembali pertanyaan 2 dari panduan]  
-   **Jawaban:** …  
+2. **Bagaimana cara subclass memanggil konstruktor superclass?**  
+   **Jawaban:** Untuk memastikan semua data dan pengaturan dari kelas induk dipanggil dan disiapkan terlebih dahulu sebelum kelas anak dibuat.  
 
-3. [Tuliskan kembali pertanyaan 3 dari panduan]  
-   **Jawaban:** …  )
+3. **Berikan contoh kasus di POS pertanian selain Benih, Pupuk, dan Alat Pertanian yang bisa dijadikan subclass.**  
+
+   **Jawaban:** Subclass ObatHama dengan sifat tambahan seperti jenisHama (misalnya: Penggerek Batang) dan dosisCampuran (misalnya: per liter air).

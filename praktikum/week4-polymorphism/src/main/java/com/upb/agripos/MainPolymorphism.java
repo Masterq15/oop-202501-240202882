@@ -9,7 +9,7 @@ public class MainPolymorphism {
                 new Benih("BNH-001", "Benih Padi IR64", 25000, 100, "IR64"),
                 new Pupuk("PPK-101", "Pupuk Urea", 350000, 40, "Urea"),
                 new AlatPertanian("ALT-501", "Cangkul Baja", 90000, 15, "Baja"),
-                new ObatHama("OBT-220", "Wastak",25000,4,"basmi wereng")
+                new ObatHama("OBT-245", "Bakterisida",25000,4,"Basmi Bakteri")
         };
 
         for (Product p : daftarProduk) {

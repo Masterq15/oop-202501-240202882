@@ -21,7 +21,7 @@ public class MainCart {
         cart.removeProduct(p1);
         cart.printCart();
 
-        // Test HashMap (OPSIONAL)
+        // Test HashMap 
         System.out.println("\n=== Test dengan Map ===");
         ShoppingCartMap cartMap = new ShoppingCartMap();
         cartMap.addProduct(p1);

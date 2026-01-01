@@ -1,9 +1,10 @@
 # Laporan Praktikum Week 9 - Exception Handling dan Custom Exception
 
-**Nama**: Risky Dimas Nugroho  
-**NIM**: 240202882  
+## Identitas
+**Nama**       : Risky Dimas Nugroho
+**NIM**        : 240202882
+**Kelas**      : 3IKRB
 **Mata Kuliah**: Object Oriented Programming
-
 ---
 
 ## 1. Tujuan Praktikum

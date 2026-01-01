@@ -2,9 +2,10 @@
 Topik: [WEEK 6 Desain Arsitektur Sistem dengan UML dan Prinsip SOLID]
 
 ## Identitas
-- Nama  : [Risky Dimas Nugroho]
-- NIM   : [240202882]
-- Kelas : [3 IKRB]
+**Nama**       : Risky Dimas Nugroho
+**NIM**        : 240202882
+**Kelas**      : 3IKRB
+**Mata Kuliah**: Object Oriented Programming
 
 ---
 

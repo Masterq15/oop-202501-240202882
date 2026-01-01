@@ -1,7 +1,9 @@
 # Laporan Praktikum Week 7 - Collections dan Keranjang Belanja
 
-**Nama**: Risky Dimas Nugroho
-**NIM**: 240202882
+## Identitas
+**Nama**       : Risky Dimas Nugroho
+**NIM**        : 240202882
+**Kelas**      : 3IKRB
 **Mata Kuliah**: Object Oriented Programming
 
 

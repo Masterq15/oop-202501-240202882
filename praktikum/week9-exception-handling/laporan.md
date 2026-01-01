@@ -2,8 +2,7 @@
 
 **Nama**: Risky Dimas Nugroho  
 **NIM**: 240202882  
-**Mata Kuliah**: Pemrograman Berorientasi Objek  
-**Tanggal**: [Tanggal Anda Mengerjakan]
+**Mata Kuliah**: Object Oriented Programming
 
 ---
 

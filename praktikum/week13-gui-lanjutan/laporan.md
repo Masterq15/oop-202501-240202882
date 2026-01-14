@@ -1,73 +1,107 @@
-# Laporan Praktikum Minggu 1 (sesuaikan minggu ke berapa?)
-Topik: [Tuliskan judul topik, misalnya "Class dan Object"]
+# Laporan Praktikum Minggu 12
+**Topik:** GUI Dasar JavaFX (Event-Driven Programming)
 
 ## Identitas
-- Nama  : [Nama Mahasiswa]
-- NIM   : [NIM Mahasiswa]
-- Kelas : [Kelas]
+
+* **Nama** : Risky Dimas Nugroho
+* **NIM** : 240202882
+* **Kelas** : 3IKRB
 
 ---
 
 ## Tujuan
-(Tuliskan tujuan praktikum minggu ini.  
-Contoh: *Mahasiswa memahami konsep class dan object serta dapat membuat class Produk dengan enkapsulasi.*)
+
+1. Menjelaskan konsep *event-driven programming* dalam pengembangan aplikasi.
+2. Membangun antarmuka grafis sederhana menggunakan library JavaFX.
+3. Membuat form input data produk (Kode, Nama, Harga, Stok).
+4. Menampilkan daftar produk pada komponen GUI secara dinamis.
+5. Mengintegrasikan GUI dengan modul backend yang telah dibuat sebelumnya (DAO & Service).
 
 ---
 
 ## Dasar Teori
-(Tuliskan ringkasan teori singkat (3–5 poin) yang mendasari praktikum.  
-Contoh:  
-1. Class adalah blueprint dari objek.  
-2. Object adalah instansiasi dari class.  
-3. Enkapsulasi digunakan untuk menyembunyikan data.)
+
+* **Event-Driven Programming**: Paradigma di mana alur eksekusi ditentukan oleh kejadian (*event*) seperti klik mouse atau input keyboard.
+* **JavaFX**: Platform perangkat lunak untuk membuat aplikasi desktop Java dengan antarmuka yang kaya.
+* **MVC (Model-View-Controller)**: Pola desain yang memisahkan data (Model), tampilan (View), dan logika (Controller).
+* **Dependency Injection**: Teknik menyuntikkan ketergantungan objek (seperti Service) ke dalam objek yang membutuhkan.
 
 ---
 
 ## Langkah Praktikum
-(Tuliskan Langkah-langkah dalam prakrikum, contoh:
-1. Langkah-langkah yang dilakukan (setup, coding, run).  
-2. File/kode yang dibuat.  
-3. Commit message yang digunakan.)
+
+1. **Setup Project**: Mengonfigurasi library JavaFX pada project Maven agar dapat berjalan.
+2. **Membuat Layout GUI**: Membuat class `ProductFormView` yang berisi komponen `TextField`, `Button`, dan `ListView`.
+3. **Implementasi Controller**: Membuat logika untuk menangani interaksi pengguna pada tombol.
+4. **Integrasi Backend**: Menghubungkan Controller dengan `ProductService` untuk penyimpanan data ke database.
+5. **Event Handling**: Menambahkan listener pada tombol "Tambah Produk" untuk memicu proses input dan pembaruan UI.
+6. **Commit dan Push**: Menyimpan perubahan ke repository dengan pesan commit `week12-gui-dasar`.
 
 ---
 
 ## Kode Program
-(Tuliskan kode utama yang dibuat, contoh:  
+
+Implementasi logika pada Controller menggunakan ekspresi lambda untuk menangani aksi tombol tambah:
 
 ```java
-// Contoh
-Produk p1 = new Produk("BNH-001", "Benih Padi", 25000, 100);
-System.out.println(p1.getNama());
+btnAdd.setOnAction(event -> {
+    try {
+        Product p = new Product(
+             txtCode.getText(),
+             txtName.getText(),
+             Double.parseDouble(txtPrice.getText()),
+             Integer.parseInt(txtStock.getText())
+        );
+        productService.insert(p); 
+        listView.getItems().add(p.getCode() + " - " + p.getName() + " (Rp " + p.getPrice() + ", Stok: " + p.getStock() + ")");
+        clearFields();
+    } catch (NumberFormatException e) {
+        showAlert("Input Error", "Harga dan Stok harus berupa angka.");
+    } catch (Exception e) {
+        showAlert("Error", "Gagal menyimpan produk: " + e.getMessage());
+    }
+});
+
 ```
-)
+
 ---
 
 ## Hasil Eksekusi
+
 (Sertakan screenshot hasil eksekusi program.  
-![Screenshot hasil](screenshots/hasil.png)
+![Screenshot hasil](screenshots/week13.png)
 )
+---
+Berdasarkan aplikasi **Agri-POS - Kelola Produk**, sistem berhasil menampilkan data berikut:
+
+* **Produk P01**: Pupuk Organik Premium (Rp 30000.0, Stok: 8).
+* **Produk P02**: Benih Padi (Rp 15000.0, Stok: 50).
+* **Input Aktif**: Kode "PO3", Nama "Bakterisida", Harga "1200000", Stok "20".
+
 ---
 
 ## Analisis
-(
-- Jelaskan bagaimana kode berjalan.  
-- Apa perbedaan pendekatan minggu ini dibanding minggu sebelumnya.  
-- Kendala yang dihadapi dan cara mengatasinya.  
-)
+
+* **Mekanisme Event**: Aplikasi menunggu tindakan pengguna (klik tombol) untuk menjalankan logika, bukan berjalan linear dari atas ke bawah.
+* **Integrasi Modular**: GUI berhasil menggunakan kembali (*reusability*) logika bisnis dari `ProductService` dan `ProductDAO`.
+* **Validasi**: Penanganan error dengan *try-catch* diperlukan untuk mencegah aplikasi *crash* jika pengguna salah memasukkan tipe data angka.
+* **Kendala**: Tantangan utama adalah memastikan tata letak GUI tetap rapi dan sinkron dengan data di database.
+
 ---
 
 ## Kesimpulan
-(Tuliskan kesimpulan dari praktikum minggu ini.  
-Contoh: *Dengan menggunakan class dan object, program menjadi lebih terstruktur dan mudah dikembangkan.*)
+
+Praktikum ini berhasil mendemonstrasikan pembuatan GUI JavaFX yang terintegrasi dengan backend. Penggunaan pola MVC dan paradigma *event-driven* membuat aplikasi lebih interaktif dan kode program tetap terorganisir dengan baik.
 
 ---
 
-## Quiz
-(1. [Tuliskan kembali pertanyaan 1 dari panduan]  
-   **Jawaban:** …  
+## Traceability Bab 6 (UML) -> GUI
 
-2. [Tuliskan kembali pertanyaan 2 dari panduan]  
-   **Jawaban:** …  
+| Artefak Bab 6 | Referensi | Handler GUI | Controller/Service | DAO | Dampak UI/DB |
+| --- | --- | --- | --- | --- | --- |
+| **Use Case** | UC-01 Tambah Produk | Tombol Tambah | `ProductController.add()` → `ProductService.insert()` | `ProductDAO.insert()` | UI list bertambah + DB insert |
+| **Activity** | AD-01 Tambah Produk | Tombol Tambah | Validasi input & panggil service | `insert()` | Validasi → Simpan → Tampil |
+| **Sequence** | SD-01 Tambah Produk | Tombol Tambah | View → Controller → Service | DAO → DB | Urutan panggilan sesuai SD |
 
-3. [Tuliskan kembali pertanyaan 3 dari panduan]  
-   **Jawaban:** …  )
+---
+

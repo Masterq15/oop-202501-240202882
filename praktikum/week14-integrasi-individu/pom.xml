@@ -6,11 +6,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.upb</groupId>
-    <artifactId>week12-gui-dasar</artifactId>
+    <artifactId>week14-integrasi-individu</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>Week 12 - GUI Dasar JavaFX Agri-POS</name>
+    <name>Week 14 - Integrasi Individu JavaFX Agri-POS</name>
 
     <!-- ===================== -->
     <!-- PROPERTIES -->
@@ -44,6 +44,14 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.3</version>
+        </dependency>
+
+        <!-- JUnit 5 untuk Testing (Bab 10) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

@@ -6,11 +6,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.upb</groupId>
-    <artifactId>week12-gui-dasar</artifactId>
+    <artifactId>week13-gui-lanjutan</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>Week 12 - GUI Dasar JavaFX Agri-POS</name>
+    <name>Week 13 - GUI Lanjutan JavaFX Agri-POS</name>
 
     <!-- ===================== -->
     <!-- PROPERTIES -->

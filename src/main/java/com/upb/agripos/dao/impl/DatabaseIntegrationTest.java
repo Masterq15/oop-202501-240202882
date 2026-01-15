@@ -38,19 +38,18 @@ public class DatabaseIntegrationTest {
         System.out.println("\n=== All Tests Completed ===");
         
         // Cleanup
-        DatabaseConnection.getInstance().closePool();
+        DatabaseConnection.getInstance().closeConnection();
     }
     
     /**
      * Test 1: Cek connection pool
      */
     private static void testConnectionPool() {
-        System.out.println("TEST 1: Connection Pool Status");
+        System.out.println("TEST 1: Database Connection Status");
         System.out.println("------------------------------");
         
         if (DatabaseConnection.testConnection()) {
             System.out.println("✓ Database connection successful");
-            DatabaseConnection.getInstance().printPoolStats();
         } else {
             System.out.println("✗ Database connection failed");
         }

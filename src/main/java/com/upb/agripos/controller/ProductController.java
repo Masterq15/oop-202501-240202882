@@ -7,7 +7,7 @@ import javafx.collections.ObservableList;
 
 public class ProductController {
     private ProductService productService;
-    private ObservableList productList;
+    private ObservableList<Product> productList;
 
     public ProductController(ProductService productService) {
         this.productService = productService;
@@ -22,14 +22,14 @@ public class ProductController {
     }
 
     // Add new product
-    public boolean addProduct(String code, String name, String priceStr, String stockStr) {
+    public boolean addProduct(String code, String name, String category, String priceStr, String stockStr) {
         try {
             // Parse input
             double price = Double.parseDouble(priceStr);
             int stock = Integer.parseInt(stockStr);
 
             // Create product object
-            Product product = new Product(code, name, price, stock);
+            Product product = new Product(code, name, category, price, stock);
 
             // Add through service
             boolean success = productService.addProduct(product);

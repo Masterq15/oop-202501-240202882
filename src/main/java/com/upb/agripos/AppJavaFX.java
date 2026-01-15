@@ -1,71 +1,106 @@
 package com.upb.agripos;
 
-import com.upb.agripos.config.DatabaseConnection;
-import com.upb.agripos.controller.ProductController;
-import com.upb.agripos.service.ProductService;
-import com.upb.agripos.view.ProductFormView;
+import com.upb.agripos.controller.AuthController;
+import com.upb.agripos.service.AuthServiceImpl;
+import com.upb.agripos.view.AdminDashboard;
+import com.upb.agripos.view.LoginView;
+import com.upb.agripos.view.PosView;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
+/**
+ * Main Application Entry Point - Week 15 Collaborative Project
+ * Person D - Frontend/UI Layer
+ * 
+ * Features:
+ * - Authentication dengan LoginView
+ * - Role-based routing (KASIR -> PosView, ADMIN -> AdminDashboard)
+ * - Service layer integration
+ */
 public class AppJavaFX extends Application {
-
+    
+    private Stage primaryStage;
+    private AuthController authController;
+    
     @Override
     public void start(Stage primaryStage) {
-        System.out.println("=".repeat(60));
-        System.out.println("AGRI-POS System - JavaFX GUI");
-        System.out.println("Nama: Risky Dimas Nugroho");
-        System.out.println("NIM: 240202882");
-        System.out.println("Week 12 - GUI Dasar JavaFX");
-        System.out.println("=".repeat(60));
-
+        this.primaryStage = primaryStage;
+        
+        System.out.println("=".repeat(70));
+        System.out.println("AGRI-POS System - Point of Sale untuk Pertanian");
+        System.out.println("Week 15 - Collaborative Project");
+        System.out.println("Person D - Frontend/UI");
+        System.out.println("=".repeat(70));
+        
         try {
-            // 1. Get Database Connection (Singleton)
-            DatabaseConnection dbConfig = DatabaseConnection.getInstance();
-            Connection connection = dbConfig.getConnection();
-            System.out.println("✓ Database connection berhasil");
-
-            // 2. Initialize Service
-            ProductService productService = new ProductService(connection);
-            System.out.println("✓ ProductService initialized");
-
-            // 3. Initialize Controller
-            ProductController productController = new ProductController(productService);
-            System.out.println("✓ ProductController initialized");
-
-            // 4. Initialize View
-            ProductFormView view = new ProductFormView(productController);
-            Scene scene = view.createScene(primaryStage);
-            System.out.println("✓ ProductFormView initialized");
-
-            // 5. Setup Stage
-            primaryStage.setTitle("AGRI-POS - Manajemen Produk");
-            primaryStage.setScene(scene);
-            primaryStage.setResizable(false);
+            // Initialize AuthService
+            AuthServiceImpl authService = new AuthServiceImpl();
+            
+            // Initialize AuthController
+            authController = new AuthController(authService);
+            System.out.println("✓ AuthController initialized");
+            
+            // Setup primary stage
+            primaryStage.setTitle("🛒 AGRI-POS - Point of Sale System");
+            primaryStage.setWidth(1200);
+            primaryStage.setHeight(800);
+            
+            // Show LoginView first
+            showLoginView();
+            
             primaryStage.show();
-
-            System.out.println("✓ GUI displayed successfully");
-            System.out.println("=".repeat(60));
-
-            // Cleanup on close
-            primaryStage.setOnCloseRequest(event -> {
-                try {
-                    connection.close();
-                    System.out.println("Database connection closed");
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            });
-
+            System.out.println("✓ Application started successfully");
+            System.out.println("=".repeat(70));
+            
         } catch (Exception e) {
             System.err.println("✗ Error initializing application:");
             e.printStackTrace();
         }
     }
-
+    
+    /**
+     * Display LoginView
+     */
+    private void showLoginView() {
+        LoginView loginView = new LoginView(primaryStage, authController);
+        LoginView.setNavCallback((user) -> {
+            if (user.isAdmin()) {
+                showAdminDashboard();
+            } else {
+                showPosView();
+            }
+        });
+        Scene scene = loginView.createScene();
+        primaryStage.setScene(scene);
+        System.out.println("→ LoginView displayed");
+    }
+    
+    /**
+     * Display PosView untuk KASIR
+     */
+    private void showPosView() {
+        PosView posView = new PosView(primaryStage, authController);
+        PosView.setNavCallback(() -> showLoginView());
+        Scene scene = posView.createScene();
+        primaryStage.setScene(scene);
+        System.out.println("→ PosView displayed for: " + authController.getCurrentUser().getFullName());
+    }
+    
+    /**
+     * Display AdminDashboard untuk ADMIN
+     */
+    private void showAdminDashboard() {
+        AdminDashboard adminDashboard = new AdminDashboard(primaryStage, authController);
+        AdminDashboard.setNavCallback(() -> showLoginView());
+        Scene scene = adminDashboard.createScene();
+        primaryStage.setScene(scene);
+        System.out.println("→ AdminDashboard displayed for: " + authController.getCurrentUser().getFullName());
+    }
+    
+    /**
+     * Main entry point
+     */
     public static void main(String[] args) {
         launch(args);
     }

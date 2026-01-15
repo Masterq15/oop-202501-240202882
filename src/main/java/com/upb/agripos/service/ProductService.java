@@ -1,6 +1,7 @@
 package com.upb.agripos.service;
 
 import com.upb.agripos.dao.ProductDAO;
+import com.upb.agripos.dao.ProductDAOImpl;
 import com.upb.agripos.model.Product;
 import java.sql.Connection;
 import java.util.List;
@@ -9,13 +10,13 @@ public class ProductService {
     private ProductDAO productDAO;
 
     public ProductService(Connection connection) {
-        this.productDAO = new ProductDAO(connection);
+        this.productDAO = new ProductDAOImpl(connection);
     }
 
     // Business Logic: Insert Product dengan validasi
     public boolean addProduct(Product product) {
         // Validasi: Cek apakah kode sudah ada
-        Product existing = productDAO.findByCode(product.getCode());
+        Product existing = productDAO.findById(product.getCode());
         if (existing != null) {
             System.out.println("Error: Kode produk sudah ada!");
             return false;
@@ -43,7 +44,7 @@ public class ProductService {
 
     // Find by code
     public Product getProductByCode(String code) {
-        return productDAO.findByCode(code);
+        return productDAO.findById(code);
     }
 
     // Update product

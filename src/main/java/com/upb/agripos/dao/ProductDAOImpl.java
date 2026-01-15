@@ -5,6 +5,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * ProductDAOImpl - Database Access Object untuk Product
+ * Implementasi menggunakan JDBC dengan connection pooling
+ * 
+ * NOTA: Implementation digerakkan ke week15-proyek-kelompok
+ * Disini saat ini hanya stub untuk kompilasi collaborative project
+ */
 public class ProductDAOImpl implements ProductDAO {
     private Connection connection;
 
@@ -14,29 +21,29 @@ public class ProductDAOImpl implements ProductDAO {
 
     @Override
     public boolean insert(Product product) {
-        // ... (logika SQL INSERT dari poin 3.3) ...
+        // TODO: Implement in collaborative project
+        return false;
     }
-
-    // ... (lanjutkan Override untuk findAll, findByCode, update, dan delete) ...
 
     @Override
     public List<Product> findAll() {
-        List<Product> products = new ArrayList<>();
-        String sql = "SELECT code, name, price, stock FROM products";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                Product p = new Product(
-                    rs.getString("code"),
-                    rs.getString("name"),
-                    rs.getDouble("price"),
-                    rs.getInt("stock")
-                );
-                products.add(p);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return products;
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Product findById(String productId) {
+        return null;
+    }
+
+    @Override
+    public boolean update(Product product) {
+        // TODO: Implement
+        return false;
+    }
+
+    @Override
+    public boolean delete(String productId) {
+        // TODO: Implement
+        return false;
     }
 }

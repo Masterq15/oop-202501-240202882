@@ -15,9 +15,10 @@ public class ProductFormView {
     // UI Components
     private TextField txtCode;
     private TextField txtName;
+    private TextField txtCategory;
     private TextField txtPrice;
     private TextField txtStock;
-    private ListView listView;
+    private ListView<Product> listView;
     private Label lblStatus;
 
     public ProductFormView(ProductController controller) {
@@ -70,6 +71,9 @@ public class ProductFormView {
         txtName = new TextField();
         txtName.setPromptText("Contoh: Pupuk Organik");
         
+        txtCategory = new TextField();
+        txtCategory.setPromptText("Contoh: Pupuk");
+        
         txtPrice = new TextField();
         txtPrice.setPromptText("Contoh: 50000");
         
@@ -97,6 +101,7 @@ public class ProductFormView {
             lblFormTitle,
             new Label("Kode Produk:"), txtCode,
             new Label("Nama Produk:"), txtName,
+            new Label("Kategori:"), txtCategory,
             new Label("Harga (Rp):"), txtPrice,
             new Label("Stok:"), txtStock,
             btnAdd, btnClear, btnDelete
@@ -138,11 +143,12 @@ public class ProductFormView {
         // Get input values
         String code = txtCode.getText().trim();
         String name = txtName.getText().trim();
+        String category = txtCategory.getText().trim();
         String price = txtPrice.getText().trim();
         String stock = txtStock.getText().trim();
 
         // Call controller
-        boolean success = controller.addProduct(code, name, price, stock);
+        boolean success = controller.addProduct(code, name, category, price, stock);
 
         if (success) {
             showAlert(Alert.AlertType.INFORMATION, "Sukses", 
@@ -236,6 +242,7 @@ public class ProductFormView {
     private void clearForm() {
         txtCode.clear();
         txtName.clear();
+        txtCategory.clear();
         txtPrice.clear();
         txtStock.clear();
         txtCode.requestFocus();

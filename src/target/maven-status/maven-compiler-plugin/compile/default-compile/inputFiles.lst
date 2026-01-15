@@ -1,8 +1,19 @@
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\AppJavaFX.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\controller\ProductController.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\dao\ProductDAO.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\dao\ProductDAOImpl.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\Launcher.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\Product.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductService.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\view\ProductFormView.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\AppJavaFX.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\controller\ProductController.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\DatabaseIntegrationTest.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\ProductDAOImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\TestDatabaseSetup.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\UserDAOImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\ProductDAO.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\ProductDAOImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\discount\DiscountStrategyPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\discount\FixedDiscountPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\discount\PercentageDiscountPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\Launcher.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\Product.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\ProductPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductService.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductServiceImplPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductServicePersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\util\DatabaseConnection.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\view\ProductFormView.java

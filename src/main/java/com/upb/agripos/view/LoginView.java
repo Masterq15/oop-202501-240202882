@@ -93,6 +93,26 @@ public class LoginView {
         passwordField.setPrefWidth(300);
         passwordField.setStyle("-fx-padding: 10; -fx-font-size: 12;");
         
+        TextField passwordVisibleField = new TextField();
+        passwordVisibleField.setPromptText("Masukkan password");
+        passwordVisibleField.setPrefWidth(300);
+        passwordVisibleField.setStyle("-fx-padding: 10; -fx-font-size: 12;");
+        passwordVisibleField.setVisible(false);
+        
+        CheckBox showPasswordCheck = new CheckBox("Tampilkan Password");
+        showPasswordCheck.setStyle("-fx-font-size: 11;");
+        showPasswordCheck.setOnAction(e -> {
+            if (showPasswordCheck.isSelected()) {
+                passwordVisibleField.setText(passwordField.getText());
+                passwordVisibleField.setVisible(true);
+                passwordField.setVisible(false);
+            } else {
+                passwordField.setText(passwordVisibleField.getText());
+                passwordField.setVisible(true);
+                passwordVisibleField.setVisible(false);
+            }
+        });
+        
         // Role selector
         Label roleLabel = new Label("Login sebagai:");
         roleLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
@@ -142,7 +162,7 @@ public class LoginView {
         // Event handlers
         loginButton.setOnAction(event -> {
             String username = usernameField.getText().trim();
-            String password = passwordField.getText().trim();
+            String password = showPasswordCheck.isSelected() ? passwordVisibleField.getText().trim() : passwordField.getText().trim();
             String role = kasirRadio.isSelected() ? "KASIR" : "ADMIN";
             
             User loggedInUser = authController.handleLogin(username, password, role);
@@ -161,12 +181,22 @@ public class LoginView {
         resetButton.setOnAction(event -> {
             usernameField.clear();
             passwordField.clear();
+            passwordVisibleField.clear();
+            showPasswordCheck.setSelected(false);
+            passwordField.setVisible(true);
+            passwordVisibleField.setVisible(false);
             kasirRadio.setSelected(true);
             statusLabel.setText("");
         });
         
         // Allow Enter key to login
         passwordField.setOnKeyPressed(event -> {
+            if (event.getCode().toString().equals("ENTER")) {
+                loginButton.fire();
+            }
+        });
+        
+        passwordVisibleField.setOnKeyPressed(event -> {
             if (event.getCode().toString().equals("ENTER")) {
                 loginButton.fire();
             }
@@ -180,7 +210,7 @@ public class LoginView {
             usernameLabel,
             usernameField,
             passwordLabel,
-            passwordField,
+            new VBox(3, new HBox(passwordField, passwordVisibleField), showPasswordCheck),
             roleLabel,
             roleBox,
             hintLabel,

@@ -33,7 +33,7 @@ public class ProductDAOImpl implements ProductDAO {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            ps.setString(1, product.getProductId());
+            ps.setString(1, product.getCode());
             ps.setString(2, product.getName());
             ps.setString(3, product.getCategory());
             ps.setString(4, product.getName()); // description
@@ -69,7 +69,7 @@ public class ProductDAOImpl implements ProductDAO {
             ps.setString(2, product.getCategory());
             ps.setDouble(3, product.getPrice());
             ps.setInt(4, product.getStock());
-            ps.setInt(5, Integer.parseInt(product.getProductId()));
+            ps.setInt(5, Integer.parseInt(product.getCode()));
             
             int rows = ps.executeUpdate();
             return rows > 0;
@@ -346,11 +346,11 @@ public class ProductDAOImpl implements ProductDAO {
      */
     private Product mapResultSetToProduct(ResultSet rs) throws SQLException {
         Product product = new Product(
-            String.valueOf(rs.getInt("product_id")),
+            rs.getString("code"),
             rs.getString("name"),
+            rs.getString("category"),
             rs.getDouble("price"),
-            rs.getInt("stock"),
-            rs.getString("category")
+            rs.getInt("stock")
         );
         return product;
     }

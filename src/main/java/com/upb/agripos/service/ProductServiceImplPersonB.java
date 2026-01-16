@@ -24,7 +24,7 @@ public class ProductServiceImplPersonB implements ProductServicePersonB {
         if (product == null) {
             throw new IllegalArgumentException("Produk tidak boleh null");
         }
-        if (product.getProductId() == null || product.getProductId().isEmpty()) {
+        if (product.getCode() == null || product.getCode().isEmpty()) {
             throw new IllegalArgumentException("ID Produk tidak boleh kosong");
         }
         if (product.getName() == null || product.getName().isEmpty()) {
@@ -46,7 +46,7 @@ public class ProductServiceImplPersonB implements ProductServicePersonB {
      */
     private boolean isDuplicateId(String productId, boolean isUpdate, String updateId) {
         for (Product p : products) {
-            if (p.getProductId().equals(productId)) {
+            if (p.getCode().equals(productId)) {
                 if (isUpdate && productId.equals(updateId)) {
                     return false; // Sama dengan ID yang diupdate
                 }
@@ -61,8 +61,8 @@ public class ProductServiceImplPersonB implements ProductServicePersonB {
         validateProduct(product);
 
         // Cek duplikasi ID
-        if (isDuplicateId(product.getProductId(), false, null)) {
-            throw new IllegalArgumentException("Produk dengan ID " + product.getProductId() + " sudah ada");
+        if (isDuplicateId(product.getCode(), false, null)) {
+            throw new IllegalArgumentException("Produk dengan ID " + product.getCode() + " sudah ada");
         }
 
         products.add(product);
@@ -72,9 +72,9 @@ public class ProductServiceImplPersonB implements ProductServicePersonB {
     public void updateProduct(Product product) {
         validateProduct(product);
 
-        Product existing = getProduct(product.getProductId());
+        Product existing = getProduct(product.getCode());
         if (existing == null) {
-            throw new IllegalArgumentException("Produk dengan ID " + product.getProductId() + " tidak ditemukan");
+            throw new IllegalArgumentException("Produk dengan ID " + product.getCode() + " tidak ditemukan");
         }
 
         // Update data
@@ -105,7 +105,7 @@ public class ProductServiceImplPersonB implements ProductServicePersonB {
         }
 
         for (Product p : products) {
-            if (p.getProductId().equals(productId)) {
+            if (p.getCode().equals(productId)) {
                 return p;
             }
         }

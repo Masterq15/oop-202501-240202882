@@ -176,7 +176,7 @@ public class DatabaseIntegrationTest {
         List<Product> products = productDao.findAll();
         for (int i = 0; i < Math.min(3, products.size()); i++) {
             Product p = products.get(i);
-            System.out.println("  - ID: " + p.getProductId() + 
+            System.out.println("  - ID: " + p.getCode() + 
                              ", Name: " + p.getName() + 
                              ", Price: Rp " + String.format("%.2f", p.getPrice()));
         }

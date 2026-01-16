@@ -1,41 +1,40 @@
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\AppJavaFX.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\controller\AuthController.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\controller\ProductController.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\DatabaseIntegrationTest.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\ProductDAOImpl.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\TestDatabaseSetup.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\UserDAOImpl.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\dao\ProductDAO.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\dao\ProductDAOImpl.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\discount\DiscountStrategyPersonB.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\discount\FixedDiscountPersonB.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\discount\PercentageDiscountPersonB.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\Launcher.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\audit\AuditAction.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\audit\AuditLog.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\payment\CashPayment.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\payment\EWalletPayment.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\payment\Payment.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\payment\PaymentStatus.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\Product.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\ProductPersonB.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\transaction\Transaction.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\transaction\TransactionDetail.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\transaction\TransactionStatus.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\model\User.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\AuditLogServiceImpl.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\AuditLogServicePersonA.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\AuthServiceImpl.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\IAuthService.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\PaymentServiceImpl.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\PaymentServicePersonA.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductService.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductServiceImplPersonB.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductServicePersonB.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\TransactionServiceImpl.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\service\TransactionServicePersonA.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\util\DatabaseConnection.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\view\AdminDashboard.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\view\LoginView.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\view\PosView.java
-D:\oop-202501\oop-202501-240202882\src\main\java\com\upb\agripos\view\ProductFormView.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\AppJavaFX.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\controller\AuthController.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\controller\ProductController.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\DatabaseIntegrationTest.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\ProductDAOImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\TestDatabaseSetup.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\impl\UserDAOImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\ProductDAO.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\dao\ProductDAOImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\discount\DiscountStrategyPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\discount\FixedDiscountPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\discount\PercentageDiscountPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\Launcher.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\audit\AuditAction.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\audit\AuditLog.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\payment\CashPayment.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\payment\EWalletPayment.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\payment\Payment.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\payment\PaymentStatus.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\Product.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\transaction\Transaction.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\transaction\TransactionDetail.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\transaction\TransactionStatus.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\model\User.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\AuditLogServiceImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\AuditLogServicePersonA.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\AuthServiceImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\IAuthService.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\PaymentServiceImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\PaymentServicePersonA.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductService.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductServiceImplPersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\ProductServicePersonB.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\TransactionServiceImpl.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\service\TransactionServicePersonA.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\util\DatabaseConnection.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\view\AdminDashboard.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\view\LoginView.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\view\PosView.java
+D:\Praktik OOP\oop-202501-240202882\src\main\java\com\upb\agripos\view\ProductFormView.java

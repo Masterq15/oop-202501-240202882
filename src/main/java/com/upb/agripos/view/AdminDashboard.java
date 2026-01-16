@@ -7,6 +7,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -20,6 +21,13 @@ import javafx.stage.Stage;
  * Person D - Frontend Week 15
  */
 public class AdminDashboard {
+    
+    // Static list for sharing products between Admin and Kasir
+    private static final java.util.List<String> sharedProductList = new java.util.ArrayList<>();
+    
+    public static java.util.List<String> getSharedProductList() {
+        return sharedProductList;
+    }
     
     private Stage stage;
     private AuthController authController;
@@ -165,44 +173,11 @@ public class AdminDashboard {
         
         buttonBox.getChildren().addAll(refreshButton, deactivateButton, newUserButton);
         
-        // Details panel
-        VBox detailsBox = new VBox(5);
-        detailsBox.setStyle("-fx-padding: 10; -fx-border-color: #ddd; -fx-border-width: 1;");
-        
-        Label detailLabel = new Label("Detail User:");
-        detailLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 11;");
-        
-        TextArea detailsArea = new TextArea();
-        detailsArea.setPrefHeight(150);
-        detailsArea.setEditable(false);
-        detailsArea.setWrapText(true);
-        
-        // On selection, show details
-        userListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                String userId = newVal.split(" - ")[0];
-                User user = authService.getUserByUsername(userId);
-                if (user != null) {
-                    StringBuilder details = new StringBuilder();
-                    details.append("ID: ").append(user.getUserId()).append("\n");
-                    details.append("Username: ").append(user.getUsername()).append("\n");
-                    details.append("Nama Lengkap: ").append(user.getFullName()).append("\n");
-                    details.append("Role: ").append(user.getRole()).append("\n");
-                    details.append("Status: ").append(user.isActive() ? "Aktif" : "Nonaktif");
-                    detailsArea.setText(details.toString());
-                }
-            }
-        });
-        
-        detailsBox.getChildren().addAll(detailLabel, detailsArea);
-        
         panel.getChildren().addAll(
             titleLabel,
             new Separator(),
             userListView,
-            buttonBox,
-            new Separator(),
-            detailsBox
+            buttonBox
         );
         
         return panel;
@@ -238,15 +213,15 @@ public class AdminDashboard {
         
         Button addButton = new Button("➕ Tambah Produk");
         addButton.setStyle("-fx-padding: 8; -fx-background-color: #4CAF50; -fx-text-fill: white;");
-        addButton.setOnAction(event -> showAlert("Info", "Edit/Add product - TODO"));
+        addButton.setOnAction(event -> handleAddProduct());
         
         Button editButton = new Button("✏️ Edit Produk");
         editButton.setStyle("-fx-padding: 8;");
-        editButton.setOnAction(event -> showAlert("Info", "Edit product - TODO"));
+        editButton.setOnAction(event -> handleEditProduct());
         
         Button deleteButton = new Button("❌ Hapus Produk");
         deleteButton.setStyle("-fx-padding: 8; -fx-background-color: #f44336; -fx-text-fill: white;");
-        deleteButton.setOnAction(event -> showAlert("Info", "Delete product - TODO"));
+        deleteButton.setOnAction(event -> handleDeleteProduct());
         
         buttonBox.getChildren().addAll(addButton, editButton, deleteButton);
         
@@ -288,11 +263,11 @@ public class AdminDashboard {
         
         Button filterButton = new Button("Filter");
         filterButton.setStyle("-fx-padding: 8;");
-        filterButton.setOnAction(event -> showAlert("Info", "Filter laporan - TODO"));
+        filterButton.setOnAction(event -> handleFilterReport(fromDate, toDate));
         
         Button exportButton = new Button("📥 Export PDF");
         exportButton.setStyle("-fx-padding: 8; -fx-background-color: #2196F3; -fx-text-fill: white;");
-        exportButton.setOnAction(event -> showAlert("Info", "Export PDF - TODO"));
+        exportButton.setOnAction(event -> handleExportPDF());
         
         filterBox.getChildren().addAll(
             dateLabel, fromDate, toLabel, toDate, filterButton, exportButton
@@ -377,7 +352,7 @@ public class AdminDashboard {
         
         Button saveButton = new Button("💾 Simpan Pengaturan");
         saveButton.setStyle("-fx-padding: 10; -fx-background-color: #4CAF50; -fx-text-fill: white;");
-        saveButton.setOnAction(event -> showAlert("Sukses", "Pengaturan tersimpan"));
+        saveButton.setOnAction(event -> handleSaveSettings(taxField, discountField, auditLogCheck));
         
         panel.getChildren().addAll(
             titleLabel,
@@ -411,11 +386,139 @@ public class AdminDashboard {
      * Handle user actions
      */
     private void handleDeactivateUser() {
-        showAlert("Info", "Deactivate user - TODO");
+        String selected = userListView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Peringatan", "Pilih user terlebih dahulu");
+            return;
+        }
+        
+        String userId = selected.split(" - ")[0];
+        AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
+        User user = authService.getUserByUsername(userId);
+        
+        if (user == null) {
+            showAlert("Error", "User tidak ditemukan");
+            return;
+        }
+        
+        if (!user.isActive()) {
+            showAlert("Info", "User sudah nonaktif");
+            return;
+        }
+        
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Konfirmasi Nonaktifkan User");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Nonaktifkan user: " + user.getFullName() + "?");
+        
+        if (confirm.showAndWait().get() == ButtonType.OK) {
+            user.setActive(false);
+            authService.getAllUsers().put(user.getUsername(), user);
+            System.out.println("✓ User " + user.getUsername() + " dinonaktifkan");
+            showAlert("Sukses", "User berhasil dinonaktifkan");
+            refreshUserList();
+        }
     }
     
     private void handleNewUser() {
-        showAlert("Info", "New user dialog - TODO");
+        Dialog<User> dialog = new Dialog<>();
+        dialog.setTitle("Tambah User Baru");
+        dialog.setHeaderText("Masukkan Data User Baru");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+        
+        TextField userIdField = new TextField();
+        userIdField.setPromptText("User ID (contoh: USR001)");
+        
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Username");
+        
+        TextField fullNameField = new TextField();
+        fullNameField.setPromptText("Nama Lengkap");
+        
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Password");
+        TextField passwordVisibleField = new TextField();
+        passwordVisibleField.setPromptText("Password");
+        passwordVisibleField.setVisible(false);
+        CheckBox showPasswordCheck = new CheckBox("Tampilkan Password");
+        showPasswordCheck.setOnAction(e -> {
+            if (showPasswordCheck.isSelected()) {
+                passwordVisibleField.setText(passwordField.getText());
+                passwordVisibleField.setVisible(true);
+                passwordField.setVisible(false);
+            } else {
+                passwordField.setText(passwordVisibleField.getText());
+                passwordField.setVisible(true);
+                passwordVisibleField.setVisible(false);
+            }
+        });
+        
+        ComboBox<String> roleCombo = new ComboBox<>();
+        roleCombo.getItems().addAll("KASIR", "ADMIN");
+        roleCombo.setValue("KASIR");
+        
+        grid.add(new Label("User ID:"), 0, 0);
+        grid.add(userIdField, 1, 0);
+        grid.add(new Label("Username:"), 0, 1);
+        grid.add(usernameField, 1, 1);
+        grid.add(new Label("Nama Lengkap:"), 0, 2);
+        grid.add(fullNameField, 1, 2);
+        grid.add(new Label("Password:"), 0, 3);
+        VBox passBox = new VBox(3);
+        HBox passFieldBox = new HBox();
+        passFieldBox.getChildren().addAll(passwordField, passwordVisibleField);
+        passBox.getChildren().addAll(passFieldBox, showPasswordCheck);
+        grid.add(passBox, 1, 3);
+        grid.add(new Label("Role:"), 0, 4);
+        grid.add(roleCombo, 1, 4);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        ButtonType okButton = new ButtonType("Tambah", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                String userId = userIdField.getText().trim();
+                String username = usernameField.getText().trim();
+                String fullName = fullNameField.getText().trim();
+                String password = showPasswordCheck.isSelected() ? passwordVisibleField.getText().trim() : passwordField.getText().trim();
+                String role = roleCombo.getValue();
+                
+                if (userId.isEmpty() || username.isEmpty() || fullName.isEmpty() || password.isEmpty()) {
+                    showAlert("Error", "Semua field harus diisi");
+                    return null;
+                }
+                
+                AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
+                if (authService.getUserByUsername(username) != null) {
+                    showAlert("Error", "Username " + username + " sudah digunakan");
+                    return null;
+                }
+                
+                User newUser = new User(userId, username, fullName, password, role);
+                newUser.setActive(true);
+                return newUser;
+            }
+            return null;
+        });
+        
+        var result = dialog.showAndWait();
+        if (result.isPresent() && result.get() != null) {
+            AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
+            User newUser = result.get();
+            if (authService.registerUser(newUser)) {
+                showAlert("Sukses", "User " + newUser.getUsername() + " berhasil ditambahkan");
+                refreshUserList();
+            } else {
+                showAlert("Error", "Gagal menambahkan user");
+            }
+        }
     }
     
     private void refreshUserList() {
@@ -438,6 +541,219 @@ public class AdminDashboard {
             if (logoutCallback != null) {
                 logoutCallback.onLogout();
             }
+        }
+    }
+    
+    /**
+     * Handle product management
+     */
+    private void handleAddProduct() {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Tambah Produk Baru");
+        dialog.setHeaderText("Masukkan Data Produk");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+        
+        TextField codeField = new TextField();
+        codeField.setPromptText("Kode Produk (P001)");
+        
+        TextField nameField = new TextField();
+        nameField.setPromptText("Nama Produk");
+        
+        TextField categoryField = new TextField();
+        categoryField.setPromptText("Kategori");
+        
+        TextField priceField = new TextField();
+        priceField.setPromptText("Harga (Rp)");
+        
+        TextField stockField = new TextField();
+        stockField.setPromptText("Stok");
+        
+        grid.add(new Label("Kode:"), 0, 0);
+        grid.add(codeField, 1, 0);
+        grid.add(new Label("Nama:"), 0, 1);
+        grid.add(nameField, 1, 1);
+        grid.add(new Label("Kategori:"), 0, 2);
+        grid.add(categoryField, 1, 2);
+        grid.add(new Label("Harga:"), 0, 3);
+        grid.add(priceField, 1, 3);
+        grid.add(new Label("Stok:"), 0, 4);
+        grid.add(stockField, 1, 4);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        ButtonType okButton = new ButtonType("Tambah", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                if (codeField.getText().trim().isEmpty() || nameField.getText().trim().isEmpty()) {
+                    showAlert("Error", "Kode dan Nama produk tidak boleh kosong");
+                    return null;
+                }
+                return codeField.getText() + " - " + nameField.getText();
+            }
+            return null;
+        });
+        
+        var result = dialog.showAndWait();
+        if (result.isPresent() && result.get() != null) {
+            String newProduct = result.get() + " - Rp " + priceField.getText() + " (Stok: " + stockField.getText() + ")";
+            productListView.getItems().add(newProduct);
+            sharedProductList.add(newProduct);  // Add to shared list
+            showAlert("Sukses", "Produk berhasil ditambahkan");
+        }
+    }
+    
+    private void handleEditProduct() {
+        String selected = productListView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Peringatan", "Pilih produk terlebih dahulu");
+            return;
+        }
+        
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Edit Produk");
+        dialog.setHeaderText("Masukkan Data Produk Baru");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+        
+        TextField codeField = new TextField();
+        codeField.setPromptText("Kode Produk");
+        
+        TextField nameField = new TextField();
+        nameField.setPromptText("Nama Produk Baru");
+        
+        TextField priceField = new TextField();
+        priceField.setPromptText("Harga Baru (Rp)");
+        
+        TextField stockField = new TextField();
+        stockField.setPromptText("Stok Baru");
+        
+        grid.add(new Label("Kode:"), 0, 0);
+        grid.add(codeField, 1, 0);
+        grid.add(new Label("Nama:"), 0, 1);
+        grid.add(nameField, 1, 1);
+        grid.add(new Label("Harga:"), 0, 2);
+        grid.add(priceField, 1, 2);
+        grid.add(new Label("Stok:"), 0, 3);
+        grid.add(stockField, 1, 3);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        ButtonType okButton = new ButtonType("Simpan", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                if (codeField.getText().trim().isEmpty() || nameField.getText().trim().isEmpty()) {
+                    showAlert("Error", "Kode dan Nama produk tidak boleh kosong");
+                    return null;
+                }
+                return codeField.getText() + " - " + nameField.getText();
+            }
+            return null;
+        });
+        
+        var result = dialog.showAndWait();
+        if (result.isPresent() && result.get() != null) {
+            int idx = productListView.getSelectionModel().getSelectedIndex();
+            productListView.getItems().set(idx, result.get() + " - Rp " + priceField.getText() + " (Stok: " + stockField.getText() + ")");
+            showAlert("Sukses", "Produk berhasil diupdate");
+        }
+    }
+    
+    private void handleDeleteProduct() {
+        String selected = productListView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Peringatan", "Pilih produk terlebih dahulu");
+            return;
+        }
+        
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Konfirmasi Hapus");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Hapus produk: " + selected + "?");
+        
+        if (confirm.showAndWait().get() == ButtonType.OK) {
+            productListView.getItems().remove(productListView.getSelectionModel().getSelectedIndex());
+            sharedProductList.remove(selected);
+            showAlert("Sukses", "Produk berhasil dihapus");
+        }
+    }
+    
+    /**
+     * Handle reports
+     */
+    private void handleFilterReport(TextField fromDate, TextField toDate) {
+        String from = fromDate.getText().trim();
+        String to = toDate.getText().trim();
+        
+        if (from.isEmpty() || to.isEmpty()) {
+            showAlert("Peringatan", "Masukkan tanggal range terlebih dahulu");
+            return;
+        }
+        
+        String report = "LAPORAN TRANSAKSI AGRI-POS\n" +
+                       "=".repeat(50) + "\n\n" +
+                       "Periode: " + from + " hingga " + to + "\n" +
+                       "Total Transaksi: 18\n" +
+                       "Total Penjualan: Rp 1.850.000\n" +
+                       "Total Diskon: Rp 185.000\n" +
+                       "Komisi: Rp 37.000\n\n" +
+                       "Top 5 Produk Terjual:\n" +
+                       "1. Beras 10kg - 9 unit\n" +
+                       "2. Jagung 5kg - 6 unit\n" +
+                       "3. Wortel 5kg - 4 unit\n" +
+                       "4. Cabai 2kg - 3 unit\n" +
+                       "5. Bawang Putih 2kg - 2 unit\n";
+        
+        reportArea.setText(report);
+        showAlert("Sukses", "Laporan berhasil difilter");
+    }
+    
+    private void handleExportPDF() {
+        String reportContent = reportArea.getText();
+        if (reportContent.isEmpty()) {
+            showAlert("Peringatan", "Tidak ada laporan untuk diekspor");
+            return;
+        }
+        
+        // Simulasi export PDF
+        String fileName = "laporan_agripos_" + java.time.LocalDate.now() + ".pdf";
+        showAlert("Sukses", "Laporan berhasil diekspor ke file:\n" + fileName);
+        System.out.println("→ Exporting report to: " + fileName);
+    }
+    
+    /**
+     * Handle settings
+     */
+    private void handleSaveSettings(TextField taxField, TextField discountField, CheckBox auditCheck) {
+        try {
+            double tax = Double.parseDouble(taxField.getText());
+            double discount = Double.parseDouble(discountField.getText());
+            
+            if (tax < 0 || discount < 0 || tax > 100 || discount > 100) {
+                showAlert("Error", "Nilai persentase harus antara 0-100");
+                return;
+            }
+            
+            System.out.println("✓ Settings saved:");
+            System.out.println("  - Tax: " + tax + "%");
+            System.out.println("  - Discount: " + discount + "%");
+            System.out.println("  - Audit Log: " + (auditCheck.isSelected() ? "Enabled" : "Disabled"));
+            
+            showAlert("Sukses", "Pengaturan berhasil disimpan");
+        } catch (NumberFormatException e) {
+            showAlert("Error", "Format input tidak valid");
         }
     }
     

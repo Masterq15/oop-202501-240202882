@@ -475,7 +475,7 @@ public class AdminDashboard {
         VBox panel = new VBox(10);
         panel.setStyle("-fx-padding: 15;");
         
-        Label titleLabel = new Label("Laporan Transaksi");
+        Label titleLabel = new Label("Laporan Transaksi & Penjualan");
         titleLabel.setFont(new Font("System", 14));
         titleLabel.setStyle("-fx-font-weight: bold;");
         
@@ -496,7 +496,7 @@ public class AdminDashboard {
         
         Button filterButton = new Button("Filter");
         filterButton.setStyle("-fx-padding: 8;");
-        filterButton.setOnAction(event -> handleFilterReport(fromDate, toDate));
+        filterButton.setOnAction(event -> handleFilterReportTable(fromDate, toDate));
         
         Button exportButton = new Button("📥 Export PDF");
         exportButton.setStyle("-fx-padding: 8; -fx-background-color: #2196F3; -fx-text-fill: white;");
@@ -506,36 +506,154 @@ public class AdminDashboard {
             dateLabel, fromDate, toLabel, toDate, filterButton, exportButton
         );
         
-        // Report content
-        reportArea = new TextArea();
-        reportArea.setPrefHeight(400);
-        reportArea.setEditable(false);
-        reportArea.setWrapText(true);
-        reportArea.setText(
-            "LAPORAN TRANSAKSI AGRI-POS\n" +
-            "=".repeat(50) + "\n\n" +
-            "Tanggal: 15/01/2026\n" +
-            "Total Transaksi: 24\n" +
-            "Total Penjualan: Rp 2.450.000\n" +
-            "Total Diskon: Rp 245.000\n" +
-            "Komisi: Rp 49.000\n\n" +
-            "Top 5 Produk Terjual:\n" +
-            "1. Beras 10kg - 12 unit\n" +
-            "2. Jagung 5kg - 8 unit\n" +
-            "3. Wortel 5kg - 6 unit\n" +
-            "4. Cabai 2kg - 5 unit\n" +
-            "5. Bawang Putih 2kg - 4 unit\n"
-        );
+        // Summary stats
+        HBox statsBox = new HBox(30);
+        statsBox.setStyle("-fx-padding: 10; -fx-background-color: #f0f0f0; -fx-border-color: #ddd; -fx-border-width: 1;");
+        statsBox.setAlignment(Pos.CENTER_LEFT);
+        
+        Label totalTxLabel = new Label("Total Transaksi: 24");
+        totalTxLabel.setStyle("-fx-font-weight: bold;");
+        Label totalSalesLabel = new Label("Total Penjualan: Rp 2.450.000");
+        totalSalesLabel.setStyle("-fx-font-weight: bold;");
+        Label totalDiscountLabel = new Label("Total Diskon: Rp 245.000");
+        totalDiscountLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #ff6600;");
+        Label komisiLabel = new Label("Komisi: Rp 49.000");
+        komisiLabel.setStyle("-fx-font-weight: bold;");
+        
+        statsBox.getChildren().addAll(totalTxLabel, totalSalesLabel, totalDiscountLabel, komisiLabel);
+        
+        // Create TableView untuk laporan produk terjual
+        javafx.scene.control.TableView<javafx.collections.ObservableMap<String, String>> reportTable = 
+            new javafx.scene.control.TableView<>();
+        
+        // Column: Nama Barang
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> namaColumn = 
+            new javafx.scene.control.TableColumn<>("Nama Barang");
+        namaColumn.setPrefWidth(150);
+        namaColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("nama", "")));
+        
+        // Column: Harga (Rp)
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> hargaColumn = 
+            new javafx.scene.control.TableColumn<>("Harga (Rp)");
+        hargaColumn.setPrefWidth(120);
+        hargaColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("harga", "")));
+        
+        // Column: Kg
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> kgColumn = 
+            new javafx.scene.control.TableColumn<>("Kg");
+        kgColumn.setPrefWidth(80);
+        kgColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("kg", "")));
+        
+        // Column: Jumlah Terjual
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> jumlahColumn = 
+            new javafx.scene.control.TableColumn<>("Jumlah Terjual");
+        jumlahColumn.setPrefWidth(120);
+        jumlahColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("jumlah", "")));
+        
+        // Column: Tanggal
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> tanggalColumn = 
+            new javafx.scene.control.TableColumn<>("Tanggal");
+        tanggalColumn.setPrefWidth(110);
+        tanggalColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("tanggal", "")));
+        
+        // Column: Total Transaksi
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> totalTxColumn = 
+            new javafx.scene.control.TableColumn<>("Total Transaksi");
+        totalTxColumn.setPrefWidth(130);
+        totalTxColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("total_tx", "")));
+        
+        // Column: Total Penjualan
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> totalPenjualanColumn = 
+            new javafx.scene.control.TableColumn<>("Total Penjualan (Rp)");
+        totalPenjualanColumn.setPrefWidth(150);
+        totalPenjualanColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("total_penjualan", "")));
+        
+        // Column: Total Diskon
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> totalDiskonColumn = 
+            new javafx.scene.control.TableColumn<>("Total Diskon (Rp)");
+        totalDiskonColumn.setPrefWidth(140);
+        totalDiskonColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("total_diskon", "")));
+        
+        // Column: Komisi
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> komisiColumn = 
+            new javafx.scene.control.TableColumn<>("Komisi (Rp)");
+        komisiColumn.setPrefWidth(120);
+        komisiColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("komisi", "")));
+        
+        // Add columns to table
+        reportTable.getColumns().addAll(namaColumn, hargaColumn, kgColumn, jumlahColumn, tanggalColumn, 
+                                       totalTxColumn, totalPenjualanColumn, totalDiskonColumn, komisiColumn);
+        
+        // Initialize dummy data
+        javafx.collections.ObservableList<javafx.collections.ObservableMap<String, String>> reportData = 
+            javafx.collections.FXCollections.observableArrayList();
+        
+        // Add sample data
+        addReportRow(reportData, "Beras 10kg", "120000", "10", "12", "15/01/2026", "1", "1440000", "144000", "28800");
+        addReportRow(reportData, "Jagung 5kg", "45000", "5", "8", "14/01/2026", "1", "360000", "36000", "7200");
+        addReportRow(reportData, "Wortel 5kg", "40000", "5", "6", "13/01/2026", "1", "240000", "24000", "4800");
+        addReportRow(reportData, "Cabai 2kg", "60000", "2", "5", "12/01/2026", "1", "300000", "30000", "6000");
+        addReportRow(reportData, "Bawang Putih 2kg", "50000", "2", "4", "11/01/2026", "1", "200000", "20000", "4000");
+        addReportRow(reportData, "Kacang Hijau 5kg", "55000", "5", "3", "10/01/2026", "1", "165000", "16500", "3300");
+        addReportRow(reportData, "Ketela Pohon 10kg", "35000", "10", "2", "09/01/2026", "1", "70000", "7000", "1400");
+        addReportRow(reportData, "Tomat 5kg", "30000", "5", "7", "08/01/2026", "1", "210000", "21000", "4200");
+        
+        reportTable.setItems(reportData);
+        reportTable.setPrefHeight(350);
         
         panel.getChildren().addAll(
             titleLabel,
             new Separator(),
             filterBox,
+            statsBox,
             new Separator(),
-            reportArea
+            reportTable
         );
         
         return panel;
+    }
+    
+    /**
+     * Helper: Add row ke report table
+     */
+    private void addReportRow(javafx.collections.ObservableList<javafx.collections.ObservableMap<String, String>> data,
+                              String nama, String harga, String kg, String jumlah, String tanggal,
+                              String totalTx, String totalPenjualan, String totalDiskon, String komisi) {
+        javafx.collections.ObservableMap<String, String> row = javafx.collections.FXCollections.observableHashMap();
+        row.put("nama", nama);
+        row.put("harga", harga);
+        row.put("kg", kg);
+        row.put("jumlah", jumlah);
+        row.put("tanggal", tanggal);
+        row.put("total_tx", totalTx);
+        row.put("total_penjualan", totalPenjualan);
+        row.put("total_diskon", totalDiskon);
+        row.put("komisi", komisi);
+        data.add(row);
+    }
+    
+    /**
+     * Handle filter report table
+     */
+    private void handleFilterReportTable(TextField fromDate, TextField toDate) {
+        String from = fromDate.getText().trim();
+        String to = toDate.getText().trim();
+        
+        if (from.isEmpty() || to.isEmpty()) {
+            showAlert("Peringatan", "Masukkan tanggal range terlebih dahulu");
+            return;
+        }
+        
+        showAlert("Sukses", "Laporan berhasil difilter untuk periode: " + from + " hingga " + to);
     }
     
     /**
@@ -687,13 +805,18 @@ public class AdminDashboard {
         passwordField.setPromptText("Password");
         TextField passwordVisibleField = new TextField();
         passwordVisibleField.setPromptText("Password");
-        passwordVisibleField.setVisible(false);
+        
+        // Use StackPane to prevent column shift when showing/hiding password
+        javafx.scene.layout.StackPane passwordStackPane = new javafx.scene.layout.StackPane();
+        passwordStackPane.setPrefHeight(30);
+        passwordStackPane.getChildren().addAll(passwordField, passwordVisibleField);
+        
         CheckBox showPasswordCheck = new CheckBox("Tampilkan Password");
         showPasswordCheck.setOnAction(e -> {
             if (showPasswordCheck.isSelected()) {
                 passwordVisibleField.setText(passwordField.getText());
-                passwordVisibleField.setVisible(true);
                 passwordField.setVisible(false);
+                passwordVisibleField.setVisible(true);
             } else {
                 passwordField.setText(passwordVisibleField.getText());
                 passwordField.setVisible(true);
@@ -712,10 +835,8 @@ public class AdminDashboard {
         grid.add(new Label("Nama Lengkap:"), 0, 2);
         grid.add(fullNameField, 1, 2);
         grid.add(new Label("Password:"), 0, 3);
-        VBox passBox = new VBox(3);
-        HBox passFieldBox = new HBox();
-        passFieldBox.getChildren().addAll(passwordField, passwordVisibleField);
-        passBox.getChildren().addAll(passFieldBox, showPasswordCheck);
+        VBox passBox = new VBox(5);
+        passBox.getChildren().addAll(passwordStackPane, showPasswordCheck);
         grid.add(passBox, 1, 3);
         grid.add(new Label("Role:"), 0, 4);
         grid.add(roleCombo, 1, 4);
@@ -790,42 +911,9 @@ public class AdminDashboard {
     
     
     /**
-     * Handle reports
+     * Handle export PDF
      */
-    private void handleFilterReport(TextField fromDate, TextField toDate) {
-        String from = fromDate.getText().trim();
-        String to = toDate.getText().trim();
-        
-        if (from.isEmpty() || to.isEmpty()) {
-            showAlert("Peringatan", "Masukkan tanggal range terlebih dahulu");
-            return;
-        }
-        
-        String report = "LAPORAN TRANSAKSI AGRI-POS\n" +
-                       "=".repeat(50) + "\n\n" +
-                       "Periode: " + from + " hingga " + to + "\n" +
-                       "Total Transaksi: 18\n" +
-                       "Total Penjualan: Rp 1.850.000\n" +
-                       "Total Diskon: Rp 185.000\n" +
-                       "Komisi: Rp 37.000\n\n" +
-                       "Top 5 Produk Terjual:\n" +
-                       "1. Beras 10kg - 9 unit\n" +
-                       "2. Jagung 5kg - 6 unit\n" +
-                       "3. Wortel 5kg - 4 unit\n" +
-                       "4. Cabai 2kg - 3 unit\n" +
-                       "5. Bawang Putih 2kg - 2 unit\n";
-        
-        reportArea.setText(report);
-        showAlert("Sukses", "Laporan berhasil difilter");
-    }
-    
     private void handleExportPDF() {
-        String reportContent = reportArea.getText();
-        if (reportContent.isEmpty()) {
-            showAlert("Peringatan", "Tidak ada laporan untuk diekspor");
-            return;
-        }
-        
         // Simulasi export PDF
         String fileName = "laporan_agripos_" + java.time.LocalDate.now() + ".pdf";
         showAlert("Sukses", "Laporan berhasil diekspor ke file:\n" + fileName);

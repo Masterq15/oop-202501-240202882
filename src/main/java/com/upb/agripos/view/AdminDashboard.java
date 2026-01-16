@@ -184,7 +184,7 @@ public class AdminDashboard {
     }
     
     /**
-     * Create product management panel
+     * Create product management panel dengan TableView
      */
     private VBox createProductManagementPanel() {
         VBox panel = new VBox(10);
@@ -194,45 +194,278 @@ public class AdminDashboard {
         titleLabel.setFont(new Font("System", 14));
         titleLabel.setStyle("-fx-font-weight: bold;");
         
-        // Product list (dummy data)
-        productListView = new ListView<>();
-        productListView.setPrefHeight(300);
-        productListView.getItems().addAll(
-            "P001 - Beras 10kg - Rp 120.000 (Stok: 45)",
-            "P002 - Jagung 5kg - Rp 45.000 (Stok: 32)",
-            "P003 - Kacang Hijau 5kg - Rp 55.000 (Stok: 28)",
-            "P004 - Ketela Pohon 10kg - Rp 35.000 (Stok: 50)",
-            "P005 - Wortel 5kg - Rp 40.000 (Stok: 15)",
-            "P006 - Tomat 5kg - Rp 30.000 (Stok: 22)",
-            "P007 - Cabai 2kg - Rp 60.000 (Stok: 8)",
-            "P008 - Bawang Putih 2kg - Rp 50.000 (Stok: 18)"
-        );
+        // Create TableView untuk produk management
+        javafx.scene.control.TableView<javafx.collections.ObservableMap<String, String>> productTable = 
+            new javafx.scene.control.TableView<>();
+        
+        // Column: Kode Produk
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> codeColumn = 
+            new javafx.scene.control.TableColumn<>("Kode Produk");
+        codeColumn.setPrefWidth(100);
+        codeColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("kode", "")));
+        
+        // Column: Nama Produk
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> nameColumn = 
+            new javafx.scene.control.TableColumn<>("Nama Produk");
+        nameColumn.setPrefWidth(150);
+        nameColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("nama", "")));
+        
+        // Column: Jenis Produk
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> typeColumn = 
+            new javafx.scene.control.TableColumn<>("Jenis Produk");
+        typeColumn.setPrefWidth(120);
+        typeColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("jenis", "")));
+        
+        // Column: Harga
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> priceColumn = 
+            new javafx.scene.control.TableColumn<>("Harga (Rp)");
+        priceColumn.setPrefWidth(120);
+        priceColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("harga", "")));
+        
+        // Column: Stok
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> stockColumn = 
+            new javafx.scene.control.TableColumn<>("Stok");
+        stockColumn.setPrefWidth(80);
+        stockColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("stok", "")));
+        
+        // Column: Berat (kg)
+        javafx.scene.control.TableColumn<javafx.collections.ObservableMap<String, String>, String> weightColumn = 
+            new javafx.scene.control.TableColumn<>("Berat (kg)");
+        weightColumn.setPrefWidth(100);
+        weightColumn.setCellValueFactory(param -> 
+            new javafx.beans.property.SimpleStringProperty(param.getValue().getOrDefault("berat", "")));
+        
+        // Add columns to table
+        productTable.getColumns().addAll(codeColumn, nameColumn, typeColumn, priceColumn, stockColumn, weightColumn);
+        
+        // Initialize dummy data
+        javafx.collections.ObservableList<javafx.collections.ObservableMap<String, String>> productData = 
+            javafx.collections.FXCollections.observableArrayList();
+        
+        // Add sample products
+        addProductRow(productData, "P001", "Beras", "Padi-padian", "120000", "45", "10");
+        addProductRow(productData, "P002", "Jagung", "Padi-padian", "45000", "32", "5");
+        addProductRow(productData, "P003", "Kacang Hijau", "Kacang-kacangan", "55000", "28", "5");
+        addProductRow(productData, "P004", "Ketela Pohon", "Umbi-umbian", "35000", "50", "10");
+        addProductRow(productData, "P005", "Wortel", "Sayuran", "40000", "15", "5");
+        addProductRow(productData, "P006", "Tomat", "Sayuran", "30000", "22", "3");
+        addProductRow(productData, "P007", "Cabai", "Sayuran", "60000", "8", "2");
+        addProductRow(productData, "P008", "Bawang Putih", "Sayuran", "50000", "18", "2");
+        
+        productTable.setItems(productData);
+        productTable.setPrefHeight(350);
         
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER_LEFT);
         
         Button addButton = new Button("➕ Tambah Produk");
         addButton.setStyle("-fx-padding: 8; -fx-background-color: #4CAF50; -fx-text-fill: white;");
-        addButton.setOnAction(event -> handleAddProduct());
+        addButton.setOnAction(event -> handleAddProductTable(productTable, productData));
         
         Button editButton = new Button("✏️ Edit Produk");
         editButton.setStyle("-fx-padding: 8;");
-        editButton.setOnAction(event -> handleEditProduct());
+        editButton.setOnAction(event -> handleEditProductTable(productTable, productData));
         
         Button deleteButton = new Button("❌ Hapus Produk");
         deleteButton.setStyle("-fx-padding: 8; -fx-background-color: #f44336; -fx-text-fill: white;");
-        deleteButton.setOnAction(event -> handleDeleteProduct());
+        deleteButton.setOnAction(event -> handleDeleteProductTable(productTable, productData));
         
         buttonBox.getChildren().addAll(addButton, editButton, deleteButton);
         
         panel.getChildren().addAll(
             titleLabel,
             new Separator(),
-            productListView,
+            productTable,
             buttonBox
         );
         
         return panel;
+    }
+    
+    /**
+     * Helper: Add row ke product table
+     */
+    private void addProductRow(javafx.collections.ObservableList<javafx.collections.ObservableMap<String, String>> data,
+                               String kode, String nama, String jenis, String harga, String stok, String berat) {
+        javafx.collections.ObservableMap<String, String> row = javafx.collections.FXCollections.observableHashMap();
+        row.put("kode", kode);
+        row.put("nama", nama);
+        row.put("jenis", jenis);
+        row.put("harga", harga);
+        row.put("stok", stok);
+        row.put("berat", berat);
+        data.add(row);
+    }
+    
+    /**
+     * Handle add product ke table
+     */
+    private void handleAddProductTable(javafx.scene.control.TableView<javafx.collections.ObservableMap<String, String>> table,
+                                       javafx.collections.ObservableList<javafx.collections.ObservableMap<String, String>> data) {
+        Dialog<javafx.collections.ObservableMap<String, String>> dialog = new Dialog<>();
+        dialog.setTitle("Tambah Produk Baru");
+        dialog.setHeaderText("Masukkan Data Produk");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+        
+        TextField codeField = new TextField();
+        codeField.setPromptText("P001");
+        TextField nameField = new TextField();
+        nameField.setPromptText("Nama Produk");
+        TextField typeField = new TextField();
+        typeField.setPromptText("Jenis (Padi-padian, Sayuran, etc)");
+        TextField priceField = new TextField();
+        priceField.setPromptText("Harga (Rp)");
+        TextField stockField = new TextField();
+        stockField.setPromptText("Stok");
+        TextField weightField = new TextField();
+        weightField.setPromptText("Berat (kg)");
+        
+        grid.add(new Label("Kode:"), 0, 0);
+        grid.add(codeField, 1, 0);
+        grid.add(new Label("Nama:"), 0, 1);
+        grid.add(nameField, 1, 1);
+        grid.add(new Label("Jenis:"), 0, 2);
+        grid.add(typeField, 1, 2);
+        grid.add(new Label("Harga:"), 0, 3);
+        grid.add(priceField, 1, 3);
+        grid.add(new Label("Stok:"), 0, 4);
+        grid.add(stockField, 1, 4);
+        grid.add(new Label("Berat:"), 0, 5);
+        grid.add(weightField, 1, 5);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        ButtonType okButton = new ButtonType("Tambah", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                if (codeField.getText().trim().isEmpty() || nameField.getText().trim().isEmpty()) {
+                    showAlert("Error", "Kode dan Nama produk tidak boleh kosong");
+                    return null;
+                }
+                javafx.collections.ObservableMap<String, String> row = javafx.collections.FXCollections.observableHashMap();
+                row.put("kode", codeField.getText().trim());
+                row.put("nama", nameField.getText().trim());
+                row.put("jenis", typeField.getText().trim());
+                row.put("harga", priceField.getText().trim());
+                row.put("stok", stockField.getText().trim());
+                row.put("berat", weightField.getText().trim());
+                return row;
+            }
+            return null;
+        });
+        
+        var result = dialog.showAndWait();
+        if (result.isPresent() && result.get() != null) {
+            data.add(result.get());
+            // Tambah ke shared list juga untuk kasir
+            String product = result.get().get("kode") + " - " + result.get().get("nama") + " - Rp " + result.get().get("harga");
+            sharedProductList.add(product);
+            showAlert("Sukses", "Produk berhasil ditambahkan");
+        }
+    }
+    
+    /**
+     * Handle edit product di table
+     */
+    private void handleEditProductTable(javafx.scene.control.TableView<javafx.collections.ObservableMap<String, String>> table,
+                                        javafx.collections.ObservableList<javafx.collections.ObservableMap<String, String>> data) {
+        int selectedIndex = table.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            showAlert("Peringatan", "Pilih produk terlebih dahulu");
+            return;
+        }
+        
+        javafx.collections.ObservableMap<String, String> selected = data.get(selectedIndex);
+        
+        Dialog<javafx.collections.ObservableMap<String, String>> dialog = new Dialog<>();
+        dialog.setTitle("Edit Produk");
+        dialog.setHeaderText("Ubah Data Produk");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+        
+        TextField codeField = new TextField(selected.get("kode"));
+        TextField nameField = new TextField(selected.get("nama"));
+        TextField typeField = new TextField(selected.get("jenis"));
+        TextField priceField = new TextField(selected.get("harga"));
+        TextField stockField = new TextField(selected.get("stok"));
+        TextField weightField = new TextField(selected.get("berat"));
+        
+        grid.add(new Label("Kode:"), 0, 0);
+        grid.add(codeField, 1, 0);
+        grid.add(new Label("Nama:"), 0, 1);
+        grid.add(nameField, 1, 1);
+        grid.add(new Label("Jenis:"), 0, 2);
+        grid.add(typeField, 1, 2);
+        grid.add(new Label("Harga:"), 0, 3);
+        grid.add(priceField, 1, 3);
+        grid.add(new Label("Stok:"), 0, 4);
+        grid.add(stockField, 1, 4);
+        grid.add(new Label("Berat:"), 0, 5);
+        grid.add(weightField, 1, 5);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        ButtonType okButton = new ButtonType("Update", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                selected.put("kode", codeField.getText().trim());
+                selected.put("nama", nameField.getText().trim());
+                selected.put("jenis", typeField.getText().trim());
+                selected.put("harga", priceField.getText().trim());
+                selected.put("stok", stockField.getText().trim());
+                selected.put("berat", weightField.getText().trim());
+                return selected;
+            }
+            return null;
+        });
+        
+        var result = dialog.showAndWait();
+        if (result.isPresent()) {
+            table.refresh();
+            showAlert("Sukses", "Produk berhasil diupdate");
+        }
+    }
+    
+    /**
+     * Handle delete product dari table
+     */
+    private void handleDeleteProductTable(javafx.scene.control.TableView<javafx.collections.ObservableMap<String, String>> table,
+                                          javafx.collections.ObservableList<javafx.collections.ObservableMap<String, String>> data) {
+        int selectedIndex = table.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            showAlert("Peringatan", "Pilih produk terlebih dahulu");
+            return;
+        }
+        
+        javafx.collections.ObservableMap<String, String> selected = data.get(selectedIndex);
+        
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Konfirmasi");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Hapus produk: " + selected.get("nama") + "?");
+        
+        if (confirm.showAndWait().get() == ButtonType.OK) {
+            data.remove(selectedIndex);
+            showAlert("Sukses", "Produk berhasil dihapus");
+        }
     }
     
     /**
@@ -392,16 +625,28 @@ public class AdminDashboard {
             return;
         }
         
-        String userId = selected.split(" - ")[0];
-        AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
-        User user = authService.getUserByUsername(userId);
+        // Parse: "USERID - Nama (ROLE)" -> extract username dari selected item
+        // Format: "KSR001 - Ismi (KASIR)" kita perlu username
+        String[] parts = selected.split(" - ");
+        String userId = parts[0].trim();
         
-        if (user == null) {
+        AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
+        
+        // Cari user yang sesuai dengan userId
+        User userToDeactivate = null;
+        for (User user : authService.getAllUsers().values()) {
+            if (user.getUserId().equals(userId)) {
+                userToDeactivate = user;
+                break;
+            }
+        }
+        
+        if (userToDeactivate == null) {
             showAlert("Error", "User tidak ditemukan");
             return;
         }
         
-        if (!user.isActive()) {
+        if (!userToDeactivate.isActive()) {
             showAlert("Info", "User sudah nonaktif");
             return;
         }
@@ -409,12 +654,11 @@ public class AdminDashboard {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Konfirmasi Nonaktifkan User");
         confirm.setHeaderText(null);
-        confirm.setContentText("Nonaktifkan user: " + user.getFullName() + "?");
+        confirm.setContentText("Nonaktifkan user: " + userToDeactivate.getFullName() + "?");
         
         if (confirm.showAndWait().get() == ButtonType.OK) {
-            user.setActive(false);
-            authService.getAllUsers().put(user.getUsername(), user);
-            System.out.println("✓ User " + user.getUsername() + " dinonaktifkan");
+            userToDeactivate.setActive(false);
+            System.out.println("✓ User " + userToDeactivate.getUsername() + " berhasil dinonaktifkan");
             showAlert("Sukses", "User berhasil dinonaktifkan");
             refreshUserList();
         }
@@ -544,151 +788,6 @@ public class AdminDashboard {
         }
     }
     
-    /**
-     * Handle product management
-     */
-    private void handleAddProduct() {
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Tambah Produk Baru");
-        dialog.setHeaderText("Masukkan Data Produk");
-        
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
-        
-        TextField codeField = new TextField();
-        codeField.setPromptText("Kode Produk (P001)");
-        
-        TextField nameField = new TextField();
-        nameField.setPromptText("Nama Produk");
-        
-        TextField categoryField = new TextField();
-        categoryField.setPromptText("Kategori");
-        
-        TextField priceField = new TextField();
-        priceField.setPromptText("Harga (Rp)");
-        
-        TextField stockField = new TextField();
-        stockField.setPromptText("Stok");
-        
-        grid.add(new Label("Kode:"), 0, 0);
-        grid.add(codeField, 1, 0);
-        grid.add(new Label("Nama:"), 0, 1);
-        grid.add(nameField, 1, 1);
-        grid.add(new Label("Kategori:"), 0, 2);
-        grid.add(categoryField, 1, 2);
-        grid.add(new Label("Harga:"), 0, 3);
-        grid.add(priceField, 1, 3);
-        grid.add(new Label("Stok:"), 0, 4);
-        grid.add(stockField, 1, 4);
-        
-        dialog.getDialogPane().setContent(grid);
-        
-        ButtonType okButton = new ButtonType("Tambah", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
-        
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == okButton) {
-                if (codeField.getText().trim().isEmpty() || nameField.getText().trim().isEmpty()) {
-                    showAlert("Error", "Kode dan Nama produk tidak boleh kosong");
-                    return null;
-                }
-                return codeField.getText() + " - " + nameField.getText();
-            }
-            return null;
-        });
-        
-        var result = dialog.showAndWait();
-        if (result.isPresent() && result.get() != null) {
-            String newProduct = result.get() + " - Rp " + priceField.getText() + " (Stok: " + stockField.getText() + ")";
-            productListView.getItems().add(newProduct);
-            sharedProductList.add(newProduct);  // Add to shared list
-            showAlert("Sukses", "Produk berhasil ditambahkan");
-        }
-    }
-    
-    private void handleEditProduct() {
-        String selected = productListView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Peringatan", "Pilih produk terlebih dahulu");
-            return;
-        }
-        
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Edit Produk");
-        dialog.setHeaderText("Masukkan Data Produk Baru");
-        
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
-        
-        TextField codeField = new TextField();
-        codeField.setPromptText("Kode Produk");
-        
-        TextField nameField = new TextField();
-        nameField.setPromptText("Nama Produk Baru");
-        
-        TextField priceField = new TextField();
-        priceField.setPromptText("Harga Baru (Rp)");
-        
-        TextField stockField = new TextField();
-        stockField.setPromptText("Stok Baru");
-        
-        grid.add(new Label("Kode:"), 0, 0);
-        grid.add(codeField, 1, 0);
-        grid.add(new Label("Nama:"), 0, 1);
-        grid.add(nameField, 1, 1);
-        grid.add(new Label("Harga:"), 0, 2);
-        grid.add(priceField, 1, 2);
-        grid.add(new Label("Stok:"), 0, 3);
-        grid.add(stockField, 1, 3);
-        
-        dialog.getDialogPane().setContent(grid);
-        
-        ButtonType okButton = new ButtonType("Simpan", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
-        
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == okButton) {
-                if (codeField.getText().trim().isEmpty() || nameField.getText().trim().isEmpty()) {
-                    showAlert("Error", "Kode dan Nama produk tidak boleh kosong");
-                    return null;
-                }
-                return codeField.getText() + " - " + nameField.getText();
-            }
-            return null;
-        });
-        
-        var result = dialog.showAndWait();
-        if (result.isPresent() && result.get() != null) {
-            int idx = productListView.getSelectionModel().getSelectedIndex();
-            productListView.getItems().set(idx, result.get() + " - Rp " + priceField.getText() + " (Stok: " + stockField.getText() + ")");
-            showAlert("Sukses", "Produk berhasil diupdate");
-        }
-    }
-    
-    private void handleDeleteProduct() {
-        String selected = productListView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Peringatan", "Pilih produk terlebih dahulu");
-            return;
-        }
-        
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Konfirmasi Hapus");
-        confirm.setHeaderText(null);
-        confirm.setContentText("Hapus produk: " + selected + "?");
-        
-        if (confirm.showAndWait().get() == ButtonType.OK) {
-            productListView.getItems().remove(productListView.getSelectionModel().getSelectedIndex());
-            sharedProductList.remove(selected);
-            showAlert("Sukses", "Produk berhasil dihapus");
-        }
-    }
     
     /**
      * Handle reports

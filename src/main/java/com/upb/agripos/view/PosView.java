@@ -45,6 +45,15 @@ public class PosView {
     private Label userLabel;
     private java.util.List<String> allProducts;
     
+    // UI References untuk diskon otomatis
+    private Label itemsLabelRef;
+    private Label subtotalLabelRef;
+    private Label discountLabelRef;
+    private ToggleGroup discountGroupRef;
+    private RadioButton noDiscountRef;
+    private RadioButton percent10Ref;
+    private RadioButton percent20Ref;
+    
     public PosView(Stage stage, AuthController authController) {
         this.stage = stage;
         this.authController = authController;
@@ -125,21 +134,29 @@ public class PosView {
         productListView = new ListView<>();
         productListView.setPrefHeight(500);
         
-        // Initialize products dari shared list
-        allProducts = new java.util.ArrayList<>(AdminDashboard.getSharedProductList());
-        if (allProducts.isEmpty()) {
-            // Jika shared list kosong, gunakan default products
-            allProducts = java.util.Arrays.asList(
-                "P001 - Beras 10kg - Rp 120.000",
-                "P002 - Jagung 5kg - Rp 45.000",
-                "P003 - Kacang Hijau 5kg - Rp 55.000",
-                "P004 - Ketela Pohon 10kg - Rp 35.000",
-                "P005 - Wortel 5kg - Rp 40.000",
-                "P006 - Tomat 5kg - Rp 30.000",
-                "P007 - Cabai 2kg - Rp 60.000",
-                "P008 - Bawang Putih 2kg - Rp 50.000"
-            );
+        // Initialize products: default + shared list (tidak replace)
+        java.util.List<String> defaultProducts = java.util.Arrays.asList(
+            "P001 - Beras 10kg - Rp 120.000",
+            "P002 - Jagung 5kg - Rp 45.000",
+            "P003 - Kacang Hijau 5kg - Rp 55.000",
+            "P004 - Ketela Pohon 10kg - Rp 35.000",
+            "P005 - Wortel 5kg - Rp 40.000",
+            "P006 - Tomat 5kg - Rp 30.000",
+            "P007 - Cabai 2kg - Rp 60.000",
+            "P008 - Bawang Putih 2kg - Rp 50.000"
+        );
+        
+        allProducts = new java.util.ArrayList<>(defaultProducts);
+        
+        // Tambahkan produk dari shared list (produk baru dari admin) - jangan replace
+        java.util.List<String> sharedProducts = AdminDashboard.getSharedProductList();
+        for (String product : sharedProducts) {
+            // Hindari duplikat
+            if (!allProducts.contains(product)) {
+                allProducts.add(product);
+            }
         }
+        
         productListView.getItems().addAll(allProducts);
         
         // Event handler untuk search
@@ -231,14 +248,14 @@ public class PosView {
         summaryLabel.setFont(new Font("System", 12));
         summaryLabel.setStyle("-fx-font-weight: bold;");
         
-        Label itemsLabel = new Label("Total Item: 0");
-        itemsLabel.setStyle("-fx-font-size: 11;");
+        itemsLabelRef = new Label("Total Item: 0");
+        itemsLabelRef.setStyle("-fx-font-size: 11;");
         
-        Label subtotalLabel = new Label("Subtotal: Rp 0");
-        subtotalLabel.setStyle("-fx-font-size: 11;");
+        subtotalLabelRef = new Label("Subtotal: Rp 0");
+        subtotalLabelRef.setStyle("-fx-font-size: 11;");
         
-        Label discountLabel = new Label("Diskon: Rp 0");
-        discountLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #ff6600;");
+        discountLabelRef = new Label("Diskon: Rp 0");
+        discountLabelRef.setStyle("-fx-font-size: 11; -fx-text-fill: #ff6600;");
         
         Separator sep1 = new Separator();
         
@@ -251,33 +268,33 @@ public class PosView {
         discountOptionLabel.setStyle("-fx-font-size: 11; -fx-font-weight: bold;");
         
         HBox discountBox = new HBox(5);
-        RadioButton noDiscount = new RadioButton("Tidak Ada");
-        noDiscount.setSelected(true);
-        RadioButton percent10 = new RadioButton("10%");
-        RadioButton percent20 = new RadioButton("20%");
+        noDiscountRef = new RadioButton("Tidak Ada");
+        noDiscountRef.setSelected(true);
+        percent10Ref = new RadioButton("10%");
+        percent20Ref = new RadioButton("20%");
         
-        ToggleGroup discountGroup = new ToggleGroup();
-        noDiscount.setToggleGroup(discountGroup);
-        percent10.setToggleGroup(discountGroup);
-        percent20.setToggleGroup(discountGroup);
+        discountGroupRef = new ToggleGroup();
+        noDiscountRef.setToggleGroup(discountGroupRef);
+        percent10Ref.setToggleGroup(discountGroupRef);
+        percent20Ref.setToggleGroup(discountGroupRef);
         
         // Event handler untuk diskon
-        noDiscount.setOnAction(e -> {
-            itemsLabel.setText(String.format("Total Item: %d", getTotalItems()));
-            updateSummary(itemsLabel, subtotalLabel, discountLabel, totalLabel, 0);
+        noDiscountRef.setOnAction(e -> {
+            itemsLabelRef.setText(String.format("Total Item: %d", getTotalItems()));
+            updateSummary(itemsLabelRef, subtotalLabelRef, discountLabelRef, totalLabel, 0);
         });
         
-        percent10.setOnAction(e -> {
-            itemsLabel.setText(String.format("Total Item: %d", getTotalItems()));
-            updateSummary(itemsLabel, subtotalLabel, discountLabel, totalLabel, 10);
+        percent10Ref.setOnAction(e -> {
+            itemsLabelRef.setText(String.format("Total Item: %d", getTotalItems()));
+            updateSummary(itemsLabelRef, subtotalLabelRef, discountLabelRef, totalLabel, 10);
         });
         
-        percent20.setOnAction(e -> {
-            itemsLabel.setText(String.format("Total Item: %d", getTotalItems()));
-            updateSummary(itemsLabel, subtotalLabel, discountLabel, totalLabel, 20);
+        percent20Ref.setOnAction(e -> {
+            itemsLabelRef.setText(String.format("Total Item: %d", getTotalItems()));
+            updateSummary(itemsLabelRef, subtotalLabelRef, discountLabelRef, totalLabel, 20);
         });
         
-        discountBox.getChildren().addAll(noDiscount, percent10, percent20);
+        discountBox.getChildren().addAll(noDiscountRef, percent10Ref, percent20Ref);
         
         // Payment method
         Label paymentLabel = new Label("Metode Bayar:");
@@ -326,13 +343,13 @@ public class PosView {
         checkoutButton.setPrefHeight(50);
         checkoutButton.setFont(new Font("System", 14));
         checkoutButton.setStyle("-fx-font-weight: bold; -fx-background-color: #4CAF50; -fx-text-fill: white;");
-        checkoutButton.setOnAction(event -> handleCheckout(paymentCombo, amountField, changeLabel, noDiscount, itemsLabel, subtotalLabel, discountLabel));
+        checkoutButton.setOnAction(event -> handleCheckout(paymentCombo, amountField, changeLabel, noDiscountRef, itemsLabelRef, subtotalLabelRef, discountLabelRef));
         
         actionPanel.getChildren().addAll(
             summaryLabel,
-            itemsLabel,
-            subtotalLabel,
-            discountLabel,
+            itemsLabelRef,
+            subtotalLabelRef,
+            discountLabelRef,
             sep1,
             totalLabel,
             new Separator(),
@@ -367,7 +384,7 @@ public class PosView {
     }
     
     /**
-     * Handle add to cart
+     * Handle add to cart - dengan auto update diskon
      */
     private void handleAddToCart(String product) {
         if (product == null) {
@@ -399,6 +416,18 @@ public class PosView {
         
         // Update total price display
         updateTotalPrice();
+        
+        // AUTO UPDATE DISKON saat item ditambah
+        int discountPercent = 0;
+        if (percent10Ref.isSelected()) {
+            discountPercent = 10;
+        } else if (percent20Ref.isSelected()) {
+            discountPercent = 20;
+        }
+        
+        // Update summary otomatis dengan diskon
+        itemsLabelRef.setText(String.format("Total Item: %d", getTotalItems()));
+        updateSummary(itemsLabelRef, subtotalLabelRef, discountLabelRef, totalLabel, discountPercent);
     }
     
     /**
@@ -431,7 +460,7 @@ public class PosView {
     }
     
     /**
-     * Handle edit cart quantity
+     * Handle edit cart quantity - dengan auto update diskon
      */
     private void handleEditCart() {
         int selected = cartListView.getSelectionModel().getSelectedIndex();
@@ -479,7 +508,20 @@ public class PosView {
                 String updatedItem = parts[0] + " x" + newQty;
                 cartListView.getItems().set(selected, updatedItem);
                 updateTotalPrice();
-                showAlert("Sukses", "Quantity berhasil diperbarui!");
+                
+                // AUTO UPDATE DISKON - Get current discount percentage
+                int discountPercent = 0;
+                if (percent10Ref.isSelected()) {
+                    discountPercent = 10;
+                } else if (percent20Ref.isSelected()) {
+                    discountPercent = 20;
+                }
+                
+                // Update summary otomatis dengan diskon
+                itemsLabelRef.setText(String.format("Total Item: %d", getTotalItems()));
+                updateSummary(itemsLabelRef, subtotalLabelRef, discountLabelRef, totalLabel, discountPercent);
+                
+                showAlert("Sukses", "Quantity berhasil diperbarui dan diskon otomatis diupdate!");
             } catch (NumberFormatException ex) {
                 showAlert("Error", "Quantity harus berupa angka!");
             }
@@ -487,13 +529,25 @@ public class PosView {
     }
     
     /**
-     * Handle remove from cart
+     * Handle remove from cart - dengan auto update diskon
      */
     private void handleRemoveFromCart() {
         int selected = cartListView.getSelectionModel().getSelectedIndex();
         if (selected >= 0) {
             cartListView.getItems().remove(selected);
             updateTotalPrice();
+            
+            // AUTO UPDATE DISKON saat item dihapus
+            int discountPercent = 0;
+            if (percent10Ref.isSelected()) {
+                discountPercent = 10;
+            } else if (percent20Ref.isSelected()) {
+                discountPercent = 20;
+            }
+            
+            // Update summary otomatis dengan diskon
+            itemsLabelRef.setText(String.format("Total Item: %d", getTotalItems()));
+            updateSummary(itemsLabelRef, subtotalLabelRef, discountLabelRef, totalLabel, discountPercent);
         }
     }
     

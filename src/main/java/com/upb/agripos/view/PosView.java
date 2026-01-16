@@ -2,18 +2,28 @@ package com.upb.agripos.view;
 
 import com.upb.agripos.controller.AuthController;
 import com.upb.agripos.model.User;
+
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonBar;
 
 /**
  * PosView - Main interface untuk Kasir

@@ -17,7 +17,7 @@ CREATE TABLE products (
 INSERT INTO products (code, name, price, stock) VALUES
 ('P01', 'Pupuk Organik', 25000, 10),
 ('P02', 'Benih Padi', 15000, 50),
-('P03', 'Pestisida Alami', 45000, 20),
+('P03', 'Bakterisida', 120000, 20),
 ('P04', 'Pupuk Kimia', 35000, 30),
 ('P05', 'Benih Jagung', 18000, 40);
 

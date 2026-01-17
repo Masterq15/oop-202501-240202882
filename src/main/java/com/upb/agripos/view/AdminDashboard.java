@@ -847,20 +847,28 @@ public class AdminDashboard {
         dialog.setHeaderText("Masukkan Data User Baru");
         
         GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+        grid.setHgap(15);
+        grid.setVgap(15);
+        grid.setPadding(new javafx.geometry.Insets(20, 20, 20, 20));
         
         TextField userIdField = new TextField();
         userIdField.setPromptText("User ID (contoh: USR001)");
+        userIdField.setPrefWidth(300);
         
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
+        usernameField.setPrefWidth(300);
+        
+        TextField fullNameField = new TextField();
+        fullNameField.setPromptText("Nama Lengkap");
+        fullNameField.setPrefWidth(300);
         
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
+        passwordField.setPrefWidth(300);
         TextField passwordVisibleField = new TextField();
         passwordVisibleField.setPromptText("Password");
+        passwordVisibleField.setPrefWidth(300);
         
         // Use StackPane to prevent column shift when showing/hiding password
         javafx.scene.layout.StackPane passwordStackPane = new javafx.scene.layout.StackPane();
@@ -888,12 +896,14 @@ public class AdminDashboard {
         grid.add(userIdField, 1, 0);
         grid.add(new Label("Username:"), 0, 1);
         grid.add(usernameField, 1, 1);
-        grid.add(new Label("Password:"), 0, 2);
+        grid.add(new Label("Nama Lengkap:"), 0, 2);
+        grid.add(fullNameField, 1, 2);
+        grid.add(new Label("Password:"), 0, 3);
         VBox passBox = new VBox(5);
         passBox.getChildren().addAll(passwordStackPane, showPasswordCheck);
-        grid.add(passBox, 1, 2);
-        grid.add(new Label("Role:"), 0, 3);
-        grid.add(roleCombo, 1, 3);
+        grid.add(passBox, 1, 3);
+        grid.add(new Label("Role:"), 0, 4);
+        grid.add(roleCombo, 1, 4);
         
         dialog.getDialogPane().setContent(grid);
         
@@ -908,11 +918,12 @@ public class AdminDashboard {
             if (dialogButton == okButton) {
                 String userId = userIdField.getText().trim();
                 String username = usernameField.getText().trim();
+                String fullName = fullNameField.getText().trim();
                 String password = showPasswordCheck.isSelected() ? passwordVisibleField.getText().trim() : passwordField.getText().trim();
                 String role = roleCombo.getValue();
                 
-                if (userId.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                    showAlert("Error", "User ID, Username, dan Password harus diisi");
+                if (userId.isEmpty() || username.isEmpty() || fullName.isEmpty() || password.isEmpty()) {
+                    showAlert("Error", "User ID, Username, Nama Lengkap, dan Password harus diisi");
                     return null;
                 }
                 
@@ -922,7 +933,7 @@ public class AdminDashboard {
                     return null;
                 }
                 
-                User newUser = new User(userId, username, username, password, role);
+                User newUser = new User(userId, username, password, fullName, role);
                 newUser.setActive(true);
                 return newUser;
             }

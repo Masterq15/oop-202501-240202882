@@ -7,6 +7,7 @@ import com.upb.agripos.controller.AuthController;
 import com.upb.agripos.model.PurchaseHistory;
 import com.upb.agripos.model.User;
 import com.upb.agripos.service.AuthServiceImpl;
+import com.upb.agripos.service.ProductService;
 
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -53,6 +54,7 @@ public class AdminDashboard {
     private AuthController authController;
     private User currentUser;
     private Scene scene;
+    private ProductService productService;
     
     @FunctionalInterface
     public interface LogoutCallback {
@@ -75,6 +77,13 @@ public class AdminDashboard {
         this.stage = stage;
         this.authController = authController;
         this.currentUser = authController.getCurrentUser();
+    }
+    
+    /**
+     * Set ProductService untuk sync dengan Kasir
+     */
+    public void setProductService(ProductService productService) {
+        this.productService = productService;
     }
     
     /**
@@ -842,113 +851,140 @@ public class AdminDashboard {
     }
     
     private void handleNewUser() {
-        Dialog<User> dialog = new Dialog<>();
-        dialog.setTitle("Tambah User Baru");
-        dialog.setHeaderText("Masukkan Data User Baru");
+        boolean[] validationPassed = {false};
         
-        GridPane grid = new GridPane();
-        grid.setHgap(15);
-        grid.setVgap(15);
-        grid.setPadding(new javafx.geometry.Insets(20, 20, 20, 20));
-        
-        TextField userIdField = new TextField();
-        userIdField.setPromptText("User ID (contoh: USR001)");
-        userIdField.setPrefWidth(300);
-        
-        TextField usernameField = new TextField();
-        usernameField.setPromptText("Username");
-        usernameField.setPrefWidth(300);
-        
-        TextField fullNameField = new TextField();
-        fullNameField.setPromptText("Nama Lengkap");
-        fullNameField.setPrefWidth(300);
-        
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Password");
-        passwordField.setPrefWidth(300);
-        TextField passwordVisibleField = new TextField();
-        passwordVisibleField.setPromptText("Password");
-        passwordVisibleField.setPrefWidth(300);
-        
-        // Use StackPane to prevent column shift when showing/hiding password
-        javafx.scene.layout.StackPane passwordStackPane = new javafx.scene.layout.StackPane();
-        passwordStackPane.setPrefHeight(30);
-        passwordStackPane.getChildren().addAll(passwordField, passwordVisibleField);
-        
-        CheckBox showPasswordCheck = new CheckBox("Tampilkan Password");
-        showPasswordCheck.setOnAction(e -> {
-            if (showPasswordCheck.isSelected()) {
-                passwordVisibleField.setText(passwordField.getText());
-                passwordField.setVisible(false);
-                passwordVisibleField.setVisible(true);
-            } else {
-                passwordField.setText(passwordVisibleField.getText());
-                passwordField.setVisible(true);
-                passwordVisibleField.setVisible(false);
-            }
-        });
-        
-        ComboBox<String> roleCombo = new ComboBox<>();
-        roleCombo.getItems().addAll("KASIR", "ADMIN");
-        roleCombo.setValue("KASIR");
-        
-        grid.add(new Label("User ID:"), 0, 0);
-        grid.add(userIdField, 1, 0);
-        grid.add(new Label("Username:"), 0, 1);
-        grid.add(usernameField, 1, 1);
-        grid.add(new Label("Nama Lengkap:"), 0, 2);
-        grid.add(fullNameField, 1, 2);
-        grid.add(new Label("Password:"), 0, 3);
-        VBox passBox = new VBox(5);
-        passBox.getChildren().addAll(passwordStackPane, showPasswordCheck);
-        grid.add(passBox, 1, 3);
-        grid.add(new Label("Role:"), 0, 4);
-        grid.add(roleCombo, 1, 4);
-        
-        dialog.getDialogPane().setContent(grid);
-        
-        ButtonType okButton = new ButtonType("Tambah", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
-        
-        // Make dialog resizable so form doesn't get cut off
-        dialog.getDialogPane().setPrefWidth(500);
-        
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == okButton) {
-                String userId = userIdField.getText().trim();
-                String username = usernameField.getText().trim();
-                String fullName = fullNameField.getText().trim();
-                String password = showPasswordCheck.isSelected() ? passwordVisibleField.getText().trim() : passwordField.getText().trim();
-                String role = roleCombo.getValue();
-                
-                if (userId.isEmpty() || username.isEmpty() || fullName.isEmpty() || password.isEmpty()) {
-                    showAlert("Error", "User ID, Username, Nama Lengkap, dan Password harus diisi");
-                    return null;
+        while (!validationPassed[0]) {
+            Dialog<User> dialog = new Dialog<>();
+            dialog.setTitle("Tambah User Baru");
+            dialog.setHeaderText("Masukkan Data User Baru");
+            
+            GridPane grid = new GridPane();
+            grid.setHgap(10);
+            grid.setVgap(10);
+            grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+            
+            TextField userIdField = new TextField();
+            userIdField.setPromptText("User ID (contoh: KSR002)");
+            
+            TextField usernameField = new TextField();
+            usernameField.setPromptText("Username (min 3 karakter)");
+            
+            TextField fullNameField = new TextField();
+            fullNameField.setPromptText("Nama Lengkap");
+            
+            PasswordField passwordField = new PasswordField();
+            passwordField.setPromptText("Password (min 6 karakter)");
+            TextField passwordVisibleField = new TextField();
+            passwordVisibleField.setPromptText("Password");
+            
+            // Use StackPane to prevent column shift when showing/hiding password
+            javafx.scene.layout.StackPane passwordStackPane = new javafx.scene.layout.StackPane();
+            passwordStackPane.setPrefHeight(30);
+            passwordStackPane.getChildren().addAll(passwordField, passwordVisibleField);
+            passwordVisibleField.setVisible(false);
+            
+            CheckBox showPasswordCheck = new CheckBox("Tampilkan Password");
+            showPasswordCheck.setOnAction(e -> {
+                if (showPasswordCheck.isSelected()) {
+                    passwordVisibleField.setText(passwordField.getText());
+                    passwordField.setVisible(false);
+                    passwordVisibleField.setVisible(true);
+                } else {
+                    passwordField.setText(passwordVisibleField.getText());
+                    passwordField.setVisible(true);
+                    passwordVisibleField.setVisible(false);
                 }
-                
+            });
+            
+            ComboBox<String> roleCombo = new ComboBox<>();
+            roleCombo.getItems().addAll("KASIR", "ADMIN");
+            roleCombo.setValue("KASIR");
+            
+            grid.add(new Label("User ID:"), 0, 0);
+            grid.add(userIdField, 1, 0);
+            grid.add(new Label("Username:"), 0, 1);
+            grid.add(usernameField, 1, 1);
+            grid.add(new Label("Nama Lengkap:"), 0, 2);
+            grid.add(fullNameField, 1, 2);
+            grid.add(new Label("Password:"), 0, 3);
+            VBox passBox = new VBox(5);
+            passBox.getChildren().addAll(passwordStackPane, showPasswordCheck);
+            grid.add(passBox, 1, 3);
+            grid.add(new Label("Role:"), 0, 4);
+            grid.add(roleCombo, 1, 4);
+            
+            dialog.getDialogPane().setContent(grid);
+            
+            ButtonType okButton = new ButtonType("Tambah", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
+            
+            // Make dialog resizable
+            dialog.getDialogPane().setPrefWidth(500);
+            
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == okButton) {
+                    String userId = userIdField.getText().trim();
+                    String username = usernameField.getText().trim();
+                    String fullName = fullNameField.getText().trim();
+                    String password = passwordField.isVisible() ? 
+                        passwordField.getText().trim() : passwordVisibleField.getText().trim();
+                    String role = roleCombo.getValue();
+                    
+                    // Validasi tidak boleh kosong
+                    if (userId.isEmpty() || username.isEmpty() || fullName.isEmpty() || password.isEmpty()) {
+                        showAlert("Error", "Semua field harus diisi!");
+                        return null;
+                    }
+                    
+                    // Validasi username min 3 karakter
+                    if (username.length() < 3) {
+                        showAlert("Error", "Username minimal 3 karakter!");
+                        return null;
+                    }
+                    
+                    // Validasi password min 6 karakter
+                    if (password.length() < 6) {
+                        showAlert("Error", "Password minimal 6 karakter!");
+                        return null;
+                    }
+                    
+                    // Cek username sudah ada
+                    AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
+                    if (authService.getUserByUsername(username) != null) {
+                        showAlert("Error", "Username '" + username + "' sudah terdaftar!");
+                        return null;
+                    }
+                    
+                    User newUser = new User(userId, username, password, fullName, role);
+                    newUser.setActive(true);
+                    return newUser;
+                }
+                return null;
+            });
+            
+            var result = dialog.showAndWait();
+            
+            if (result.isPresent() && result.get() != null) {
                 AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
-                if (authService.getUserByUsername(username) != null) {
-                    showAlert("Error", "Username " + username + " sudah digunakan");
-                    return null;
-                }
+                User newUser = result.get();
                 
-                User newUser = new User(userId, username, password, fullName, role);
-                newUser.setActive(true);
-                return newUser;
-            }
-            return null;
-        });
-        
-        var result = dialog.showAndWait();
-        if (result.isPresent() && result.get() != null) {
-            AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
-            User newUser = result.get();
-            if (authService.registerUser(newUser)) {
-                showAlert("Sukses", "User " + newUser.getUsername() + " berhasil ditambahkan");
-                refreshUserList();
+                try {
+                    if (authService.registerUser(newUser)) {
+                        showAlert("Sukses", "User '" + newUser.getUsername() + "' (" + 
+                            newUser.getFullName() + ") berhasil ditambahkan sebagai " + newUser.getRole());
+                        refreshUserList();
+                        validationPassed[0] = true;
+                    } else {
+                        showAlert("Error", "Gagal menambahkan user. Cek validasi di backend.");
+                    }
+                } catch (Exception e) {
+                    showAlert("Error", "Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
             } else {
-                showAlert("Error", "Gagal menambahkan user");
+                // User clicked Cancel
+                validationPassed[0] = true;
             }
         }
     }

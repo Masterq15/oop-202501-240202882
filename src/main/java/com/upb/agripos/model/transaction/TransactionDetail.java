@@ -8,6 +8,7 @@ import com.upb.agripos.model.Product;
  */
 public class TransactionDetail {
     private String detailId;
+    private Product product;  // Tambah field untuk menyimpan Product object
     private String productCode;
     private String productName;
     private int quantity;
@@ -19,6 +20,7 @@ public class TransactionDetail {
     public TransactionDetail(String detailId, Product product, int quantity, 
                             double discount) {
         this.detailId = detailId;
+        this.product = product;  // Simpan product object
         this.productCode = product.getCode();
         this.productName = product.getName();
         this.quantity = quantity;
@@ -30,6 +32,7 @@ public class TransactionDetail {
     
     // Getters
     public String getDetailId() { return detailId; }
+    public Product getProduct() { return product; }  // Getter untuk Product
     public String getProductCode() { return productCode; }
     public String getProductName() { return productName; }
     public int getQuantity() { return quantity; }

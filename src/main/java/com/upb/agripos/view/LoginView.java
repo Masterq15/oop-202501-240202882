@@ -171,13 +171,18 @@ public class LoginView {
             String password = showPasswordCheck.isSelected() ? passwordVisibleField.getText().trim() : passwordField.getText().trim();
             String role = kasirRadio.isSelected() ? "KASIR" : "ADMIN";
             
+            System.out.println("[LOGIN] Username: " + username + ", Role: " + role);
+            
             User loggedInUser = authController.handleLogin(username, password, role);
             if (loggedInUser != null) {
+                System.out.println("[LOGIN] Login success! User: " + loggedInUser.getFullName() + ", Role: " + loggedInUser.getRole());
                 statusLabel.setText("✓ Login berhasil!");
                 statusLabel.setStyle("-fx-text-fill: #4CAF50;");
                 // Nanti akan pindah ke PosView atau AdminDashboard
+                System.out.println("[LOGIN] Calling showPosOrAdminView with user: " + loggedInUser.getFullName());
                 showPosOrAdminView(loggedInUser);
             } else {
+                System.out.println("[LOGIN] Login failed!");
                 statusLabel.setText("✗ Login gagal! Username atau password salah.");
                 statusLabel.setStyle("-fx-text-fill: #ff0000;");
                 passwordField.clear();
@@ -232,9 +237,16 @@ public class LoginView {
      * Navigate ke PosView atau AdminDashboard berdasarkan role
      */
     private void showPosOrAdminView(User user) {
+        System.out.println("[NAV] showPosOrAdminView called");
+        System.out.println("[NAV] User: " + user.getFullName() + ", Role: " + user.getRole());
+        System.out.println("[NAV] navCallback is null? " + (navCallback == null));
+        
         if (navCallback != null) {
+            System.out.println("[NAV] Calling navCallback.onLoginSuccess()");
             navCallback.onLoginSuccess(user);
+            System.out.println("[NAV] navCallback executed");
         } else {
+            System.out.println("[NAV] navCallback is NULL!");
             if (user.isAdmin()) {
                 System.out.println("→ Menampilkan Admin Dashboard");
             } else {

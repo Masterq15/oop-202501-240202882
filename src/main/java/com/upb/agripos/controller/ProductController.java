@@ -63,4 +63,68 @@ public class ProductController {
         }
         return success;
     }
+
+    // Tambah stok produk secara manual (untuk produk yang stoknya habis/0)
+    public boolean addStockManually(String code, String additionalStockStr) {
+        try {
+            // Validasi input
+            if (code == null || code.trim().isEmpty()) {
+                System.out.println("Error: Kode produk tidak boleh kosong!");
+                return false;
+            }
+
+            int additionalStock = Integer.parseInt(additionalStockStr);
+
+            // Panggil service untuk menambah stok
+            boolean success = productService.addStock(code, additionalStock);
+            
+            if (success) {
+                loadProducts(); // Refresh list setelah penambahan stok
+            }
+            
+            return success;
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Jumlah stok harus berupa angka!");
+            return false;
+        }
+    }
+
+    // Cek apakah produk stoknya habis
+    public boolean isOutOfStock(String code) {
+        return productService.isOutOfStock(code);
+    }
+
+    // Cek apakah stok produk di bawah batas minimum
+    public boolean isLowStock(String code, int minStock) {
+        return productService.isLowStock(code, minStock);
+    }
+
+    // Update product dengan stok baru
+    public boolean updateProductWithStock(String code, String stockStr) {
+        try {
+            Product product = productService.getProductByCode(code);
+            if (product == null) {
+                System.out.println("Error: Produk tidak ditemukan!");
+                return false;
+            }
+
+            int newStock = Integer.parseInt(stockStr);
+            if (newStock < 0) {
+                System.out.println("Error: Stok tidak boleh negatif!");
+                return false;
+            }
+
+            product.setStock(newStock);
+            boolean success = productService.updateProduct(product);
+            
+            if (success) {
+                loadProducts(); // Refresh list
+            }
+            
+            return success;
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Stok harus berupa angka!");
+            return false;
+        }
+    }
 }

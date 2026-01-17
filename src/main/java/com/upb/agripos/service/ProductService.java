@@ -61,4 +61,45 @@ public class ProductService {
     public boolean deleteProduct(String code) {
         return productDAO.delete(code);
     }
+
+    // Penambahan stok manual (untuk produk yang habis/stok 0)
+    public boolean addStock(String code, int additionalStock) {
+        // Validasi stok yang ditambahkan harus positif
+        if (additionalStock <= 0) {
+            System.out.println("Error: Jumlah stok yang ditambahkan harus lebih dari 0!");
+            return false;
+        }
+
+        // Cari produk berdasarkan kode
+        Product product = productDAO.findById(code);
+        if (product == null) {
+            System.out.println("Error: Produk dengan kode " + code + " tidak ditemukan!");
+            return false;
+        }
+
+        // Update stok produk
+        int newStock = product.getStock() + additionalStock;
+        product.setStock(newStock);
+
+        // Update ke database
+        boolean success = productDAO.update(product);
+        if (success) {
+            System.out.println("Stok produk " + product.getName() + " berhasil ditambahkan!");
+            System.out.println("Stok lama: " + (product.getStock() - additionalStock) + 
+                             " → Stok baru: " + newStock);
+        }
+        return success;
+    }
+
+    // Cek apakah produk stoknya habis (0)
+    public boolean isOutOfStock(String code) {
+        Product product = productDAO.findById(code);
+        return product != null && product.getStock() == 0;
+    }
+
+    // Cek apakah stok produk di bawah batas minimum (misal: < 10)
+    public boolean isLowStock(String code, int minStock) {
+        Product product = productDAO.findById(code);
+        return product != null && product.getStock() < minStock;
+    }
 }

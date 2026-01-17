@@ -3,6 +3,7 @@ package com.upb.agripos.view;
 import com.upb.agripos.controller.AuthController;
 import com.upb.agripos.model.PurchaseHistory;
 import com.upb.agripos.model.User;
+import com.upb.agripos.service.ProductService;
 
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -38,6 +39,7 @@ public class PosView {
     private AuthController authController;
     private User currentUser;
     private Scene scene;
+    private ProductService productService;
     
     @FunctionalInterface
     public interface LogoutCallback {
@@ -70,6 +72,11 @@ public class PosView {
         this.stage = stage;
         this.authController = authController;
         this.currentUser = authController.getCurrentUser();
+    }
+    
+    // Set ProductService untuk database operations
+    public void setProductService(ProductService productService) {
+        this.productService = productService;
     }
     
     /**
@@ -220,7 +227,7 @@ public class PosView {
         });
         
         Button addButton = new Button("🛒 Tambah ke Keranjang");
-        addButton.setPrefWidth(380);
+        addButton.setPrefWidth(185);
         addButton.setStyle("-fx-padding: 10; -fx-font-size: 11; -fx-background-color: #FF9800; -fx-text-fill: white;");
         addButton.setOnAction(event -> {
             java.util.Map<String, String> selected = productTableView.getSelectionModel().getSelectedItem();
@@ -231,12 +238,27 @@ public class PosView {
             }
         });
         
+        Button addStockButton = new Button("📦 Tambah Stok");
+        addStockButton.setPrefWidth(185);
+        addStockButton.setStyle("-fx-padding: 10; -fx-font-size: 11; -fx-background-color: #4CAF50; -fx-text-fill: white;");
+        addStockButton.setOnAction(event -> {
+            java.util.Map<String, String> selected = productTableView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                handleAddStock(selected);
+            } else {
+                showAlert("Peringatan", "Pilih produk terlebih dahulu!");
+            }
+        });
+        
+        HBox buttonPanel = new HBox(10);
+        buttonPanel.getChildren().addAll(addButton, addStockButton);
+        
         productPanel.getChildren().addAll(
             productLabel,
             searchField,
             new Separator(),
             productTableView,
-            addButton
+            buttonPanel
         );
         
         return productPanel;
@@ -491,6 +513,18 @@ public class PosView {
         String productBerat = product.get("berat");
         String productPrice = product.get("harga").replaceAll("[^0-9]", "");
         String productStok = product.get("stok");
+        
+        // ❌ VALIDASI: Blokir jika stok = 0 (HABIS)
+        int stok = Integer.parseInt(productStok.replaceAll("[^0-9]", ""));
+        if (stok == 0) {
+            showAlert(
+                "❌ STOK HABIS!",
+                String.format("Produk '%s' (Kode: %s) stoknya sudah habis.\n\n" +
+                    "Silakan gunakan tombol 'Tambah Stok' untuk menambahkan stok terlebih dahulu!",
+                    productName, productCode)
+            );
+            return;
+        }
         
         boolean found = false;
         
@@ -970,5 +1004,119 @@ public class PosView {
      */
     public Scene getScene() {
         return scene;
+    }
+    
+    /**
+     * Handle tambah stok - menampilkan dialog input untuk menambah stok produk
+     */
+    private void handleAddStock(java.util.Map<String, String> product) {
+        if (product == null) {
+            showAlert("Peringatan", "Pilih produk terlebih dahulu!");
+            return;
+        }
+        
+        String productCode = product.get("kode");
+        String productName = product.get("nama");
+        String productStok = product.get("stok");
+        int currentStock = Integer.parseInt(productStok.replaceAll("[^0-9]", ""));
+        
+        // Create dialog untuk input jumlah stok yang ingin ditambahkan
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Tambah Stok Produk");
+        dialog.setHeaderText(String.format("Tambah Stok: %s (Kode: %s)\nStok Saat Ini: %d", 
+            productName, productCode, currentStock));
+        
+        VBox content = new VBox(10);
+        content.setStyle("-fx-padding: 10;");
+        
+        Label label = new Label("Jumlah stok yang ditambahkan:");
+        TextField textField = new TextField();
+        textField.setPromptText("Contoh: 50");
+        textField.setPrefWidth(300);
+        
+        content.getChildren().addAll(label, textField);
+        dialog.getDialogPane().setContent(content);
+        
+        // Add buttons
+        ButtonType okButtonType = new ButtonType("Tambah", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Batal", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
+        
+        // Set result converter
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButtonType) {
+                return textField.getText();
+            }
+            return null;
+        });
+        
+        // Show dialog dan process hasilnya
+        java.util.Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String input = result.get();
+            
+            // Validasi input
+            if (input.trim().isEmpty()) {
+                showAlert("Error", "Jumlah stok tidak boleh kosong!");
+                return;
+            }
+            
+            try {
+                int additionalStock = Integer.parseInt(input);
+                
+                if (additionalStock <= 0) {
+                    showAlert("Error", "Jumlah stok harus lebih dari 0!");
+                    return;
+                }
+                
+                // Update stok di product list DAN di database
+                int newStock = currentStock + additionalStock;
+                
+                // Update product di table
+                for (java.util.Map<String, String> prod : productTableView.getItems()) {
+                    if (prod.get("kode").equals(productCode)) {
+                        prod.put("stok", String.valueOf(newStock));
+                        productTableView.refresh();
+                        break;
+                    }
+                }
+                
+                // Update ke database via ProductService
+                if (productService != null) {
+                    try {
+                        com.upb.agripos.model.Product productObj = productService.getProductByCode(productCode);
+                        if (productObj != null) {
+                            productObj.setStock(newStock);
+                            boolean dbSuccess = productService.updateProduct(productObj);
+                            
+                            if (dbSuccess) {
+                                System.out.println("[KASIR] Stok produk " + productCode + " ditambahkan: +" + 
+                                    additionalStock + " (Database updated)");
+                            } else {
+                                showAlert("Warning", "Perubahan stok tidak tersimpan ke database!");
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error updating stock to database: " + e.getMessage());
+                        showAlert("Warning", "Perubahan stok tidak tersimpan ke database!\n" + e.getMessage());
+                    }
+                } else {
+                    System.out.println("[WARNING] ProductService tidak tersedia, hanya UI yang terupdate");
+                }
+                
+                showAlert(
+                    "✅ Sukses!",
+                    String.format("Stok produk '%s' berhasil ditambahkan!\n" +
+                        "Stok sebelumnya: %d\n" +
+                        "Stok ditambahkan: %d\n" +
+                        "Stok sekarang: %d\n\n" +
+                        "(Stok Admin berkurang sesuai dengan penambahan ini)",
+                        productName, currentStock, additionalStock, newStock)
+                );
+                
+            } catch (NumberFormatException e) {
+                showAlert("Error", "Jumlah stok harus berupa angka!");
+            }
+        }
     }
 }

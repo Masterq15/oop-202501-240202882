@@ -25,14 +25,23 @@ public class UserDAOImpl {
         private String password;
         private String fullName;
         private String role;
+        private String email;
+        private String phone;
+        private boolean isActive;
+        private Timestamp createdAt;
+        private Timestamp lastLogin;
         
         // Constructor
-        public User(int userId, String username, String password, String fullName, String role) {
+        public User(int userId, String username, String password, String fullName, 
+                   String role, String email, String phone, boolean isActive) {
             this.userId = userId;
             this.username = username;
             this.password = password;
             this.fullName = fullName;
             this.role = role;
+            this.email = email;
+            this.phone = phone;
+            this.isActive = isActive;
         }
         
         public User() {}
@@ -53,6 +62,21 @@ public class UserDAOImpl {
         public String getRole() { return role; }
         public void setRole(String role) { this.role = role; }
         
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+        
+        public boolean isActive() { return isActive; }
+        public void setActive(boolean active) { isActive = active; }
+        
+        public Timestamp getCreatedAt() { return createdAt; }
+        public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+        
+        public Timestamp getLastLogin() { return lastLogin; }
+        public void setLastLogin(Timestamp lastLogin) { this.lastLogin = lastLogin; }
+        
         @Override
         public String toString() {
             return "User{" +
@@ -60,6 +84,7 @@ public class UserDAOImpl {
                     ", username='" + username + '\'' +
                     ", fullName='" + fullName + '\'' +
                     ", role='" + role + '\'' +
+                    ", isActive=" + isActive +
                     '}';
         }
     }
@@ -72,8 +97,8 @@ public class UserDAOImpl {
      * Insert user baru ke database
      */
     public boolean insert(User user) {
-        String sql = "INSERT INTO users (username, password, full_name, role) " +
-                     "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO users (username, password, full_name, role, email, phone, is_active) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -82,6 +107,9 @@ public class UserDAOImpl {
             ps.setString(2, user.getPassword());
             ps.setString(3, user.getFullName());
             ps.setString(4, user.getRole());
+            ps.setString(5, user.getEmail());
+            ps.setString(6, user.getPhone());
+            ps.setBoolean(7, user.isActive());
             
             int rows = ps.executeUpdate();
             return rows > 0;
@@ -97,17 +125,18 @@ public class UserDAOImpl {
      * Update user yang sudah ada
      */
     public boolean update(User user) {
-        String sql = "UPDATE users SET username=?, password=?, full_name=?, role=? " +
+        String sql = "UPDATE users SET full_name=?, email=?, phone=?, role=?, is_active=? " +
                      "WHERE user_id=?";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPassword());
-            ps.setString(3, user.getFullName());
+            ps.setString(1, user.getFullName());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getPhone());
             ps.setString(4, user.getRole());
-            ps.setInt(5, user.getUserId());
+            ps.setBoolean(5, user.isActive());
+            ps.setInt(6, user.getUserId());
             
             int rows = ps.executeUpdate();
             return rows > 0;
@@ -142,10 +171,10 @@ public class UserDAOImpl {
     }
     
     /**
-     * Hapus user dari database
+     * Hapus user dari database (soft delete - set is_active = false)
      */
     public boolean delete(int userId) {
-        String sql = "DELETE FROM users WHERE user_id=?";
+        String sql = "UPDATE users SET is_active=FALSE WHERE user_id=?";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -166,7 +195,7 @@ public class UserDAOImpl {
      * Cari user berdasarkan ID
      */
     public User findById(int userId) {
-        String sql = "SELECT * FROM users WHERE user_id = ?";
+        String sql = "SELECT * FROM users WHERE user_id = ? AND is_active = TRUE";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -191,7 +220,7 @@ public class UserDAOImpl {
      * Cari user berdasarkan username (untuk login)
      */
     public User findByUsername(String username) {
-        String sql = "SELECT * FROM users WHERE username = ?";
+        String sql = "SELECT * FROM users WHERE username = ? AND is_active = TRUE";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -231,16 +260,26 @@ public class UserDAOImpl {
      * Update last login timestamp
      */
     private boolean updateLastLogin(int userId) {
-        // Not applicable - no last_login field in simplified schema
-        return true;
+        String sql = "UPDATE users SET last_login = NOW() WHERE user_id = ?";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error update last login: " + e.getMessage());
+            return false;
+        }
     }
     
     /**
-     * Ambil semua user
+     * Ambil semua user yang aktif
      */
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM users ORDER BY username";
+        String sql = "SELECT * FROM users WHERE is_active = TRUE ORDER BY username";
         
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
@@ -314,7 +353,7 @@ public class UserDAOImpl {
      */
     public Map<String, Integer> getUserCountByRole() {
         Map<String, Integer> roleCount = new HashMap<>();
-        String sql = "SELECT role, COUNT(*) as count FROM users GROUP BY role";
+        String sql = "SELECT role, COUNT(*) as count FROM users WHERE is_active = TRUE GROUP BY role";
         
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
@@ -375,10 +414,13 @@ public class UserDAOImpl {
             rs.getString("password"),
             rs.getString("full_name"),
             rs.getString("role"),
-            "", // email - not in schema
-            "", // phone - not in schema
-            true // isActive - not in schema, always true
+            rs.getString("email"),
+            rs.getString("phone"),
+            rs.getBoolean("is_active")
         );
+        
+        user.setCreatedAt(rs.getTimestamp("created_at"));
+        user.setLastLogin(rs.getTimestamp("last_login"));
         
         return user;
     }

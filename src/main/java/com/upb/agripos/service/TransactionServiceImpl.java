@@ -144,6 +144,7 @@ public class TransactionServiceImpl implements TransactionServicePersonA {
     /**
      * Proses checkout
      * Update stok dan proses pembayaran
+     * VALIDASI: Cek stok sebelum checkout, jika stok habis maka checkout ditolak
      */
     @Override
     public boolean checkout(Transaction transaction, Payment payment) {
@@ -155,6 +156,29 @@ public class TransactionServiceImpl implements TransactionServicePersonA {
         }
         if (transaction.getDetails().isEmpty()) {
             throw new IllegalArgumentException("Transaksi tidak memiliki item");
+        }
+        
+        // ✓ VALIDASI STOK: Cek apakah semua produk masih tersedia sebelum checkout
+        for (TransactionDetail detail : transaction.getDetails()) {
+            Product product = detail.getProduct();
+            
+            // Jika stok sudah 0 (habis), tolak checkout
+            if (product.getStock() == 0) {
+                throw new IllegalArgumentException(
+                    String.format("❌ CHECKOUT DITOLAK! Produk '%s' (Kode: %s) stoknya HABIS (0). " +
+                        "Silakan lakukan penambahan stok terlebih dahulu!",
+                        product.getName(), product.getCode())
+                );
+            }
+            
+            // Jika stok tidak cukup untuk quantity yang diminta, tolak checkout
+            if (product.getStock() < detail.getQuantity()) {
+                throw new IllegalArgumentException(
+                    String.format("❌ CHECKOUT DITOLAK! Stok produk '%s' tidak cukup. " +
+                        "Stok tersedia: %d, Diminta: %d",
+                        product.getName(), product.getStock(), detail.getQuantity())
+                );
+            }
         }
         
         // Validasi total pembayaran sesuai dengan grand total
@@ -289,6 +313,51 @@ public class TransactionServiceImpl implements TransactionServicePersonA {
         // Return n transaksi terakhir
         int fromIndex = Math.max(0, transactionHistory.size() - limit);
         return new ArrayList<>(transactionHistory.subList(fromIndex, transactionHistory.size()));
+    }
+    
+    /**
+     * ✓ VALIDASI CHECKOUT: Cek apakah semua produk dalam transaksi masih tersedia
+     * Mengembalikan error message jika ada produk yang stoknya habis (0) atau tidak cukup
+     * 
+     * @param transaction Transaksi yang akan di-validate
+     * @return null jika semua stok cukup, atau error message jika ada masalah
+     */
+    @Override
+    public String validateCheckout(Transaction transaction) {
+        if (transaction == null) {
+            return "Error: Transaksi tidak valid";
+        }
+        
+        if (transaction.getDetails().isEmpty()) {
+            return "Error: Keranjang belanja kosong";
+        }
+        
+        // Cek setiap item dalam transaksi
+        for (TransactionDetail detail : transaction.getDetails()) {
+            Product product = detail.getProduct();
+            
+            // Jika stok sudah 0 (habis), return error
+            if (product.getStock() == 0) {
+                return String.format("❌ CHECKOUT DITOLAK!\n\n" +
+                    "Produk '%s' (Kode: %s) stoknya HABIS (0).\n\n" +
+                    "SOLUSI: Lakukan penambahan stok terlebih dahulu di menu 'Kelola Stok Produk' " +
+                    "sebelum melakukan transaksi ini.",
+                    product.getName(), product.getCode());
+            }
+            
+            // Jika stok tidak cukup, return error
+            if (product.getStock() < detail.getQuantity()) {
+                return String.format("❌ CHECKOUT DITOLAK!\n\n" +
+                    "Stok produk '%s' (Kode: %s) tidak cukup.\n" +
+                    "Stok tersedia: %d unit\n" +
+                    "Diminta: %d unit\n\n" +
+                    "SOLUSI: Kurangi jumlah pembelian atau tambahkan stok produk ini.",
+                    product.getName(), product.getCode(), 
+                    product.getStock(), detail.getQuantity());
+            }
+        }
+        
+        return null; // Semua stok cukup, checkout bisa dilanjutkan
     }
     
     /**

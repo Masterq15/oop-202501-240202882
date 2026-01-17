@@ -50,6 +50,13 @@ public interface TransactionServicePersonA {
     boolean checkout(Transaction transaction, Payment payment);
     
     /**
+     * Validasi checkout - cek apakah semua produk stoknya cukup sebelum pembayaran
+     * @param transaction transaksi yang akan di-validate
+     * @return null jika semua stok cukup, atau error message jika ada masalah
+     */
+    String validateCheckout(Transaction transaction);
+    
+    /**
      * Update stok produk setelah transaksi berhasil
      * @param product produk yang stoknya diupdate
      * @param quantity jumlah pengurangan stok

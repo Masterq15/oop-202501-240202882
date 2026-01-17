@@ -36,13 +36,23 @@ public class AuthController {
             return null;
         }
         
+        // Debug logging
+        System.out.println("[DEBUG] Attempting login - Username: " + username + ", Selected Role: " + role);
+        
         // Lakukan login
         User user = authService.login(username, password);
         
         // Validasi role cocok
-        if (user != null && !user.getRole().equalsIgnoreCase(role)) {
-            System.out.println("Error: Role user tidak sesuai. User adalah " + user.getRole());
-            return null;
+        if (user != null) {
+            System.out.println("[DEBUG] User found: " + user.getFullName() + ", Actual Role: " + user.getRole());
+            
+            if (!user.getRole().equalsIgnoreCase(role)) {
+                System.out.println("Error: Role user tidak sesuai. User adalah " + user.getRole() + " tapi dipilih " + role);
+                return null;
+            }
+            System.out.println("[DEBUG] Role match! Login success for: " + user.getFullName());
+        } else {
+            System.out.println("[DEBUG] User not found or password incorrect");
         }
         
         return user;

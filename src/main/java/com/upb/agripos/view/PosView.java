@@ -1,6 +1,7 @@
 package com.upb.agripos.view;
 
 import com.upb.agripos.controller.AuthController;
+import com.upb.agripos.model.PurchaseHistory;
 import com.upb.agripos.model.User;
 
 import javafx.geometry.Pos;
@@ -12,7 +13,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TableColumn;
@@ -160,11 +160,17 @@ public class PosView {
         );
         nameColumn.setPrefWidth(100);
         
-        TableColumn<java.util.Map<String, String>, String> quantityColumn = new TableColumn<>("Berat");
-        quantityColumn.setCellValueFactory(cellData -> 
+        TableColumn<java.util.Map<String, String>, String> beratColumn = new TableColumn<>("Berat");
+        beratColumn.setCellValueFactory(cellData -> 
             new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("berat"))
         );
-        quantityColumn.setPrefWidth(70);
+        beratColumn.setPrefWidth(70);
+        
+        TableColumn<java.util.Map<String, String>, String> stokColumn = new TableColumn<>("Stok");
+        stokColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("stok"))
+        );
+        stokColumn.setPrefWidth(60);
         
         TableColumn<java.util.Map<String, String>, String> priceColumn = new TableColumn<>("Harga (Rp)");
         priceColumn.setCellValueFactory(cellData -> 
@@ -172,18 +178,18 @@ public class PosView {
         );
         priceColumn.setPrefWidth(100);
         
-        productTableView.getColumns().addAll(codeColumn, nameColumn, quantityColumn, priceColumn);
+        productTableView.getColumns().addAll(codeColumn, nameColumn, beratColumn, stokColumn, priceColumn);
         
         // Initialize products: default + shared list (tidak replace)
         java.util.List<java.util.Map<String, String>> defaultProducts = java.util.Arrays.asList(
-            createProductMap("P001", "Beras", "10kg", "120.000"),
-            createProductMap("P002", "Jagung", "5kg", "45.000"),
-            createProductMap("P003", "Kacang Hijau", "5kg", "55.000"),
-            createProductMap("P004", "Ketela Pohon", "10kg", "35.000"),
-            createProductMap("P005", "Wortel", "5kg", "40.000"),
-            createProductMap("P006", "Tomat", "5kg", "30.000"),
-            createProductMap("P007", "Cabai", "2kg", "60.000"),
-            createProductMap("P008", "Bawang Putih", "2kg", "50.000")
+            createProductMap("P001", "Beras", "10kg", "120.000", "50"),
+            createProductMap("P002", "Jagung", "5kg", "45.000", "30"),
+            createProductMap("P003", "Kacang Hijau", "5kg", "55.000", "25"),
+            createProductMap("P004", "Ketela Pohon", "10kg", "35.000", "40"),
+            createProductMap("P005", "Wortel", "5kg", "40.000", "35"),
+            createProductMap("P006", "Tomat", "5kg", "30.000", "45"),
+            createProductMap("P007", "Cabai", "2kg", "60.000", "20"),
+            createProductMap("P008", "Bawang Putih", "2kg", "50.000", "28")
         );
         
         allProducts = new java.util.ArrayList<>();
@@ -236,12 +242,13 @@ public class PosView {
         return productPanel;
     }
     
-    private java.util.Map<String, String> createProductMap(String kode, String nama, String berat, String harga) {
+    private java.util.Map<String, String> createProductMap(String kode, String nama, String berat, String harga, String stok) {
         java.util.Map<String, String> map = new java.util.HashMap<>();
         map.put("kode", kode);
         map.put("nama", nama);
         map.put("berat", berat);
         map.put("harga", harga);
+        map.put("stok", stok);
         return map;
     }
     
@@ -481,8 +488,9 @@ public class PosView {
         
         String productCode = product.get("kode");
         String productName = product.get("nama");
-        String productUkuran = product.get("ukuran");
+        String productBerat = product.get("berat");
         String productPrice = product.get("harga").replaceAll("[^0-9]", "");
+        String productStok = product.get("stok");
         
         boolean found = false;
         
@@ -508,7 +516,9 @@ public class PosView {
             java.util.Map<String, String> cartItem = new java.util.HashMap<>();
             cartItem.put("kode", productCode);
             cartItem.put("nama", productName);
-            cartItem.put("ukuran", productUkuran);
+            cartItem.put("berat", productBerat);
+            cartItem.put("harga", product.get("harga"));
+            cartItem.put("stok", productStok);
             cartItem.put("qty", "1");
             long subtotal = Long.parseLong(productPrice);
             cartItem.put("subtotal", String.format("%,d", subtotal).replace(",", "."));
@@ -755,6 +765,55 @@ public class PosView {
         System.out.println("→ Processing checkout...");
         System.out.println(receipt.toString());
         
+        // Generate transaction ID
+        String transactionId = "TRX" + java.time.LocalDateTime.now().format(
+            java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        
+        // SAVE PURCHASE HISTORY dan REDUCE STOCK untuk setiap item yang di-checkout
+        for (java.util.Map<String, String> cartItem : cartTableView.getItems()) {
+            String productCode = cartItem.get("kode");
+            String productName = cartItem.get("nama");
+            int qtyCheckout = Integer.parseInt(cartItem.get("qty"));
+            long unitPrice = Long.parseLong(cartItem.get("harga").replaceAll("[^0-9]", ""));
+            long subtotalPrice = Long.parseLong(cartItem.get("subtotal").replaceAll("[^0-9]", ""));
+            
+            // Simpan ke purchase history
+            PurchaseHistory.addRecord(new PurchaseHistory.PurchaseRecord(
+                transactionId,
+                productCode,
+                productName,
+                qtyCheckout,
+                unitPrice,
+                subtotalPrice,
+                currentUser.getFullName(),
+                paymentMethod
+            ));
+            
+            // Update stok di allProducts
+            for (java.util.Map<String, String> product : allProducts) {
+                if (product.get("kode").equals(productCode)) {
+                    int currentStok = Integer.parseInt(product.get("stok"));
+                    int newStok = currentStok - qtyCheckout;
+                    product.put("stok", String.valueOf(Math.max(0, newStok)));
+                    System.out.println("→ Stok " + productCode + " berkurang dari " + currentStok + " menjadi " + newStok);
+                    break;
+                }
+            }
+            
+            // Update stok di productTableView items juga (PENTING!)
+            for (java.util.Map<String, String> tableItem : productTableView.getItems()) {
+                if (tableItem.get("kode").equals(productCode)) {
+                    int currentStok = Integer.parseInt(tableItem.get("stok"));
+                    int newStok = currentStok - qtyCheckout;
+                    tableItem.put("stok", String.valueOf(Math.max(0, newStok)));
+                    break;
+                }
+            }
+        }
+        
+        // Refresh product table untuk menampilkan stok terbaru
+        productTableView.refresh();
+        
         // Reset semua UI components setelah transaksi berhasil
         cartTableView.getItems().clear();
         amountField.clear();
@@ -766,7 +825,7 @@ public class PosView {
         updateTotalPrice();
         updateSummary(itemsLabel, subtotalLabel, discountLabel, totalLabel, 0);
         
-        showAlert("Sukses", "Transaksi berhasil disimpan!");
+        showAlert("Sukses", "Transaksi berhasil disimpan! Stok produk telah diperbarui.");
     }
     
     /**

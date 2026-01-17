@@ -1,21 +1,39 @@
 package com.upb.agripos.view;
 
+import java.awt.Desktop;
+import java.io.File;
+
 import com.upb.agripos.controller.AuthController;
+import com.upb.agripos.model.PurchaseHistory;
 import com.upb.agripos.model.User;
 import com.upb.agripos.service.AuthServiceImpl;
+
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.Separator;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import java.awt.Desktop;
-import java.io.File;
 
 /**
  * AdminDashboard - Interface untuk Admin
@@ -630,19 +648,31 @@ public class AdminDashboard {
         reportTable.getColumns().addAll(namaColumn, hargaColumn, kgColumn, jumlahColumn, tanggalColumn, 
                                        totalTxColumn, totalPenjualanColumn, totalDiskonColumn, komisiColumn);
         
-        // Initialize dummy data
+        // Initialize with actual purchase history data
         javafx.collections.ObservableList<javafx.collections.ObservableMap<String, String>> reportData = 
             javafx.collections.FXCollections.observableArrayList();
         
-        // Add sample data
-        addReportRow(reportData, "Beras 10kg", "120000", "10", "12", "15/01/2026", "1", "1440000", "144000", "28800");
-        addReportRow(reportData, "Jagung 5kg", "45000", "5", "8", "14/01/2026", "1", "360000", "36000", "7200");
-        addReportRow(reportData, "Wortel 5kg", "40000", "5", "6", "13/01/2026", "1", "240000", "24000", "4800");
-        addReportRow(reportData, "Cabai 2kg", "60000", "2", "5", "12/01/2026", "1", "300000", "30000", "6000");
-        addReportRow(reportData, "Bawang Putih 2kg", "50000", "2", "4", "11/01/2026", "1", "200000", "20000", "4000");
-        addReportRow(reportData, "Kacang Hijau 5kg", "55000", "5", "3", "10/01/2026", "1", "165000", "16500", "3300");
-        addReportRow(reportData, "Ketela Pohon 10kg", "35000", "10", "2", "09/01/2026", "1", "70000", "7000", "1400");
-        addReportRow(reportData, "Tomat 5kg", "30000", "5", "7", "08/01/2026", "1", "210000", "21000", "4200");
+        // Load actual data dari PurchaseHistory
+        java.util.List<PurchaseHistory.PurchaseRecord> records = PurchaseHistory.getAllRecords();
+        for (PurchaseHistory.PurchaseRecord record : records) {
+            addReportRow(reportData, 
+                record.getProductName(), 
+                String.valueOf(record.getUnitPrice()), 
+                "", 
+                String.valueOf(record.getQuantity()), 
+                record.getDate(),
+                "1",
+                String.valueOf(record.getSubtotal()),
+                "0",
+                String.valueOf(record.getSubtotal() / 50)); // Komisi 2%
+        }
+        
+        // Jika tidak ada data, tampilkan data sample
+        if (records.isEmpty()) {
+            addReportRow(reportData, "Beras 10kg", "120000", "10", "12", "15/01/2026", "1", "1440000", "144000", "28800");
+            addReportRow(reportData, "Jagung 5kg", "45000", "5", "8", "14/01/2026", "1", "360000", "36000", "7200");
+            addReportRow(reportData, "Wortel 5kg", "40000", "5", "6", "13/01/2026", "1", "240000", "24000", "4800");
+        }
         
         reportTable.setItems(reportData);
         reportTable.setPrefHeight(350);

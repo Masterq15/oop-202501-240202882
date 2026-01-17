@@ -8,6 +8,7 @@ com\upb\agripos\model\audit\AuditLog.class
 com\upb\agripos\controller\AuthController.class
 com\upb\agripos\model\transaction\Transaction.class
 com\upb\agripos\view\AdminDashboard.class
+com\upb\agripos\model\PurchaseHistory$PurchaseRecord.class
 com\upb\agripos\view\ProductFormView.class
 com\upb\agripos\discount\DiscountStrategyPersonB.class
 com\upb\agripos\model\payment\PaymentStatus.class
@@ -16,6 +17,7 @@ com\upb\agripos\service\ProductServicePersonB.class
 com\upb\agripos\model\transaction\TransactionDetail.class
 com\upb\agripos\dao\impl\TestDatabaseSetup.class
 com\upb\agripos\dao\ProductDAOImpl.class
+com\upb\agripos\model\PurchaseHistory.class
 com\upb\agripos\service\AuditLogServiceImpl.class
 com\upb\agripos\model\payment\Payment.class
 com\upb\agripos\model\payment\EWalletPayment.class

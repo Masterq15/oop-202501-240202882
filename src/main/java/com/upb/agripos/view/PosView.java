@@ -15,6 +15,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
@@ -49,11 +51,11 @@ public class PosView {
     }
     
     // UI Components
-    private ListView<String> productListView;
-    private ListView<String> cartListView;
+    private TableView<java.util.Map<String, String>> productTableView;
+    private TableView<java.util.Map<String, String>> cartTableView;
     private Label totalLabel;
     private Label userLabel;
-    private java.util.List<String> allProducts;
+    private java.util.List<java.util.Map<String, String>> allProducts;
     
     // UI References untuk diskon otomatis
     private Label itemsLabelRef;
@@ -129,7 +131,7 @@ public class PosView {
     private VBox createProductPanel() {
         VBox productPanel = new VBox(10);
         productPanel.setStyle("-fx-padding: 15; -fx-border-color: #ddd; -fx-border-width: 0 1 0 0;");
-        productPanel.setPrefWidth(300);
+        productPanel.setPrefWidth(400);
         
         Label productLabel = new Label("📦 Daftar Produk");
         productLabel.setFont(new Font("System", 14));
@@ -140,67 +142,107 @@ public class PosView {
         searchField.setPromptText("Cari produk...");
         searchField.setStyle("-fx-padding: 8;");
         
-        // Product list - load dari AdminDashboard shared list atau dari default
-        productListView = new ListView<>();
-        productListView.setPrefHeight(500);
+        // Create TableView untuk produk
+        productTableView = new TableView<>();
+        productTableView.setPrefHeight(500);
+        productTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Create columns
+        TableColumn<java.util.Map<String, String>, String> codeColumn = new TableColumn<>("Kode");
+        codeColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("kode"))
+        );
+        codeColumn.setPrefWidth(60);
+        
+        TableColumn<java.util.Map<String, String>, String> nameColumn = new TableColumn<>("Nama");
+        nameColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("nama"))
+        );
+        nameColumn.setPrefWidth(100);
+        
+        TableColumn<java.util.Map<String, String>, String> quantityColumn = new TableColumn<>("Berat");
+        quantityColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("berat"))
+        );
+        quantityColumn.setPrefWidth(70);
+        
+        TableColumn<java.util.Map<String, String>, String> priceColumn = new TableColumn<>("Harga (Rp)");
+        priceColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("harga"))
+        );
+        priceColumn.setPrefWidth(100);
+        
+        productTableView.getColumns().addAll(codeColumn, nameColumn, quantityColumn, priceColumn);
         
         // Initialize products: default + shared list (tidak replace)
-        java.util.List<String> defaultProducts = java.util.Arrays.asList(
-            "P001 - Beras 10kg - Rp 120.000",
-            "P002 - Jagung 5kg - Rp 45.000",
-            "P003 - Kacang Hijau 5kg - Rp 55.000",
-            "P004 - Ketela Pohon 10kg - Rp 35.000",
-            "P005 - Wortel 5kg - Rp 40.000",
-            "P006 - Tomat 5kg - Rp 30.000",
-            "P007 - Cabai 2kg - Rp 60.000",
-            "P008 - Bawang Putih 2kg - Rp 50.000"
+        java.util.List<java.util.Map<String, String>> defaultProducts = java.util.Arrays.asList(
+            createProductMap("P001", "Beras", "10kg", "120.000"),
+            createProductMap("P002", "Jagung", "5kg", "45.000"),
+            createProductMap("P003", "Kacang Hijau", "5kg", "55.000"),
+            createProductMap("P004", "Ketela Pohon", "10kg", "35.000"),
+            createProductMap("P005", "Wortel", "5kg", "40.000"),
+            createProductMap("P006", "Tomat", "5kg", "30.000"),
+            createProductMap("P007", "Cabai", "2kg", "60.000"),
+            createProductMap("P008", "Bawang Putih", "2kg", "50.000")
         );
         
-        allProducts = new java.util.ArrayList<>(defaultProducts);
-        
-        // Tambahkan produk dari shared list (produk baru dari admin) - jangan replace
-        java.util.List<String> sharedProducts = AdminDashboard.getSharedProductList();
-        for (String product : sharedProducts) {
-            // Hindari duplikat
-            if (!allProducts.contains(product)) {
-                allProducts.add(product);
-            }
+        allProducts = new java.util.ArrayList<>();
+        for (java.util.Map<String, String> product : defaultProducts) {
+            allProducts.add(new java.util.HashMap<>(product));
+            productTableView.getItems().add(new java.util.HashMap<>(product));
         }
-        
-        productListView.getItems().addAll(allProducts);
         
         // Event handler untuk search
         searchField.setOnKeyReleased(e -> {
             String searchText = searchField.getText().toLowerCase();
-            productListView.getItems().clear();
+            productTableView.getItems().clear();
             
             if (searchText.isEmpty()) {
                 // Tampilkan semua produk jika search kosong
-                productListView.getItems().addAll(allProducts);
+                for (java.util.Map<String, String> product : allProducts) {
+                    productTableView.getItems().add(new java.util.HashMap<>(product));
+                }
             } else {
                 // Filter produk berdasarkan pencarian
-                for (String product : allProducts) {
-                    if (product.toLowerCase().contains(searchText)) {
-                        productListView.getItems().add(product);
+                for (java.util.Map<String, String> product : allProducts) {
+                    if (product.get("nama").toLowerCase().contains(searchText) || 
+                        product.get("kode").toLowerCase().contains(searchText)) {
+                        productTableView.getItems().add(new java.util.HashMap<>(product));
                     }
                 }
             }
         });
         
-        Button addButton = new Button("+ Tambah ke Keranjang");
-        addButton.setPrefWidth(280);
-        addButton.setStyle("-fx-padding: 10; -fx-font-size: 11;");
-        addButton.setOnAction(event -> handleAddToCart(productListView.getSelectionModel().getSelectedItem()));
+        Button addButton = new Button("🛒 Tambah ke Keranjang");
+        addButton.setPrefWidth(380);
+        addButton.setStyle("-fx-padding: 10; -fx-font-size: 11; -fx-background-color: #FF9800; -fx-text-fill: white;");
+        addButton.setOnAction(event -> {
+            java.util.Map<String, String> selected = productTableView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                handleAddToCart(selected);
+            } else {
+                showAlert("Peringatan", "Pilih produk terlebih dahulu!");
+            }
+        });
         
         productPanel.getChildren().addAll(
             productLabel,
             searchField,
             new Separator(),
-            productListView,
+            productTableView,
             addButton
         );
         
         return productPanel;
+    }
+    
+    private java.util.Map<String, String> createProductMap(String kode, String nama, String berat, String harga) {
+        java.util.Map<String, String> map = new java.util.HashMap<>();
+        map.put("kode", kode);
+        map.put("nama", nama);
+        map.put("berat", berat);
+        map.put("harga", harga);
+        return map;
     }
     
     /**
@@ -214,21 +256,56 @@ public class PosView {
         cartLabel.setFont(new Font("System", 14));
         cartLabel.setStyle("-fx-font-weight: bold;");
         
-        cartListView = new ListView<>();
-        cartListView.setPrefHeight(400);
+        // Create TableView untuk keranjang
+        cartTableView = new TableView<>();
+        cartTableView.setPrefHeight(400);
+        cartTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Create columns
+        TableColumn<java.util.Map<String, String>, String> cartCodeColumn = new TableColumn<>("Kode");
+        cartCodeColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("kode"))
+        );
+        cartCodeColumn.setPrefWidth(50);
+        
+        TableColumn<java.util.Map<String, String>, String> cartNameColumn = new TableColumn<>("Nama");
+        cartNameColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("nama"))
+        );
+        cartNameColumn.setPrefWidth(80);
+        
+        TableColumn<java.util.Map<String, String>, String> cartUkuranColumn = new TableColumn<>("Berat");
+        cartUkuranColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("berat"))
+        );
+        cartUkuranColumn.setPrefWidth(60);
+        
+        TableColumn<java.util.Map<String, String>, String> qtyColumn = new TableColumn<>("Qty");
+        qtyColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("qty"))
+        );
+        qtyColumn.setPrefWidth(40);
+        
+        TableColumn<java.util.Map<String, String>, String> subtotalColumn = new TableColumn<>("Subtotal (Rp)");
+        subtotalColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("subtotal"))
+        );
+        subtotalColumn.setPrefWidth(90);
+        
+        cartTableView.getColumns().addAll(cartCodeColumn, cartNameColumn, cartUkuranColumn, qtyColumn, subtotalColumn);
         
         HBox actionBox = new HBox(10);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         
-        Button editButton = new Button("Edit Qty");
+        Button editButton = new Button("✏️ Edit Qty");
         editButton.setStyle("-fx-padding: 8;");
         editButton.setOnAction(event -> handleEditCart());
         
-        Button deleteButton = new Button("Hapus");
+        Button deleteButton = new Button("🗑️ Hapus");
         deleteButton.setStyle("-fx-padding: 8; -fx-background-color: #f44336; -fx-text-fill: white;");
         deleteButton.setOnAction(event -> handleRemoveFromCart());
         
-        Button clearButton = new Button("Kosongkan Keranjang");
+        Button clearButton = new Button("🔄 Kosongkan Keranjang");
         clearButton.setStyle("-fx-padding: 8; -fx-background-color: #ff9800; -fx-text-fill: white;");
         clearButton.setOnAction(event -> handleClearCart());
         
@@ -236,7 +313,7 @@ public class PosView {
         
         cartPanel.getChildren().addAll(
             cartLabel,
-            cartListView,
+            cartTableView,
             new Separator(),
             actionBox
         );
@@ -396,32 +473,47 @@ public class PosView {
     /**
      * Handle add to cart - dengan auto update diskon
      */
-    private void handleAddToCart(String product) {
+    private void handleAddToCart(java.util.Map<String, String> product) {
         if (product == null) {
             showAlert("Peringatan", "Pilih produk terlebih dahulu!");
             return;
         }
         
-        if (cartListView.getItems().isEmpty()) {
-            cartListView.getItems().add(product + " x1");
-        } else {
-            // Cek apakah produk sudah ada
-            boolean found = false;
-            for (int i = 0; i < cartListView.getItems().size(); i++) {
-                String item = cartListView.getItems().get(i);
-                if (item.contains(product.substring(0, 4))) { // Compare by product code
-                    // Increase quantity
-                    String[] parts = item.split(" x");
-                    int qty = Integer.parseInt(parts[1]) + 1;
-                    cartListView.getItems().set(i, product + " x" + qty);
-                    found = true;
-                    break;
-                }
+        String productCode = product.get("kode");
+        String productName = product.get("nama");
+        String productUkuran = product.get("ukuran");
+        String productPrice = product.get("harga").replaceAll("[^0-9]", "");
+        
+        boolean found = false;
+        
+        // Cek apakah produk sudah ada di keranjang
+        for (java.util.Map<String, String> cartItem : cartTableView.getItems()) {
+            if (cartItem.get("kode").equals(productCode)) {
+                // Increase quantity
+                int currentQty = Integer.parseInt(cartItem.get("qty"));
+                int newQty = currentQty + 1;
+                long subtotal = Long.parseLong(productPrice) * newQty;
+                
+                cartItem.put("qty", String.valueOf(newQty));
+                cartItem.put("subtotal", String.format("%,d", subtotal).replace(",", "."));
+                
+                cartTableView.refresh();
+                found = true;
+                break;
             }
+        }
+        
+        // Jika produk belum ada, tambahkan ke keranjang
+        if (!found) {
+            java.util.Map<String, String> cartItem = new java.util.HashMap<>();
+            cartItem.put("kode", productCode);
+            cartItem.put("nama", productName);
+            cartItem.put("ukuran", productUkuran);
+            cartItem.put("qty", "1");
+            long subtotal = Long.parseLong(productPrice);
+            cartItem.put("subtotal", String.format("%,d", subtotal).replace(",", "."));
             
-            if (!found) {
-                cartListView.getItems().add(product + " x1");
-            }
+            cartTableView.getItems().add(cartItem);
         }
         
         // Update total price display
@@ -444,44 +536,30 @@ public class PosView {
      * Update total price based on cart items
      */
     private void updateTotalPrice() {
-        double total = 0;
+        long total = 0;
         
-        for (String item : cartListView.getItems()) {
-            // Parse format: "PXXX - Nama - Rp XXX.XXX" x QTY
-            String[] parts = item.split(" x");
-            if (parts.length >= 2) {
-                // Extract quantity
-                int qty = Integer.parseInt(parts[parts.length - 1]);
-                
-                // Extract price from format "... - Rp XXX.XXX"
-                String itemInfo = parts[0];
-                int priceStartIdx = itemInfo.lastIndexOf("Rp ");
-                if (priceStartIdx != -1) {
-                    String priceStr = itemInfo.substring(priceStartIdx + 3).replaceAll("[^0-9]", "");
-                    if (!priceStr.isEmpty()) {
-                        double price = Double.parseDouble(priceStr);
-                        total += price * qty;
-                    }
-                }
+        for (java.util.Map<String, String> item : cartTableView.getItems()) {
+            String subtotalStr = item.get("subtotal").replaceAll("[^0-9]", "");
+            if (!subtotalStr.isEmpty()) {
+                total += Long.parseLong(subtotalStr);
             }
         }
         
-        totalLabel.setText(String.format("TOTAL: Rp %,d", (long)total));
+        totalLabel.setText(String.format("TOTAL: Rp %,d", total).replace(",", "."));
     }
     
     /**
      * Handle edit cart quantity - dengan auto update diskon
      */
     private void handleEditCart() {
-        int selected = cartListView.getSelectionModel().getSelectedIndex();
-        if (selected < 0) {
+        java.util.Map<String, String> selected = cartTableView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
             showAlert("Peringatan", "Pilih item yang ingin diedit!");
             return;
         }
         
-        String item = cartListView.getItems().get(selected);
-        String[] parts = item.split(" x");
-        String currentQty = parts[parts.length - 1];
+        String currentQty = selected.get("qty");
+        String productPrice = selected.get("harga");
         
         // Dialog untuk input quantity baru dengan TextField
         Dialog<String> dialog = new Dialog<>();
@@ -515,23 +593,33 @@ public class PosView {
                     showAlert("Error", "Quantity harus lebih dari 0!");
                     return;
                 }
-                String updatedItem = parts[0] + " x" + newQty;
-                cartListView.getItems().set(selected, updatedItem);
-                updateTotalPrice();
                 
-                // AUTO UPDATE DISKON - Get current discount percentage
-                int discountPercent = 0;
-                if (percent10Ref.isSelected()) {
-                    discountPercent = 10;
-                } else if (percent20Ref.isSelected()) {
-                    discountPercent = 20;
+                // Update quantity and recalculate subtotal
+                String priceStr = selected.get("harga").replaceAll("[^0-9]", "");
+                if (!priceStr.isEmpty()) {
+                    long price = Long.parseLong(priceStr);
+                    long newSubtotal = price * newQty;
+                    
+                    selected.put("qty", String.valueOf(newQty));
+                    selected.put("subtotal", String.format("%,d", newSubtotal).replace(",", "."));
+                    
+                    cartTableView.refresh();
+                    updateTotalPrice();
+                    
+                    // AUTO UPDATE DISKON - Get current discount percentage
+                    int discountPercent = 0;
+                    if (percent10Ref.isSelected()) {
+                        discountPercent = 10;
+                    } else if (percent20Ref.isSelected()) {
+                        discountPercent = 20;
+                    }
+                    
+                    // Update summary otomatis dengan diskon
+                    itemsLabelRef.setText(String.format("Total Item: %d", getTotalItems()));
+                    updateSummary(itemsLabelRef, subtotalLabelRef, discountLabelRef, totalLabel, discountPercent);
+                    
+                    showAlert("Sukses", "Quantity berhasil diperbarui dan diskon otomatis diupdate!");
                 }
-                
-                // Update summary otomatis dengan diskon
-                itemsLabelRef.setText(String.format("Total Item: %d", getTotalItems()));
-                updateSummary(itemsLabelRef, subtotalLabelRef, discountLabelRef, totalLabel, discountPercent);
-                
-                showAlert("Sukses", "Quantity berhasil diperbarui dan diskon otomatis diupdate!");
             } catch (NumberFormatException ex) {
                 showAlert("Error", "Quantity harus berupa angka!");
             }
@@ -542,9 +630,9 @@ public class PosView {
      * Handle remove from cart - dengan auto update diskon
      */
     private void handleRemoveFromCart() {
-        int selected = cartListView.getSelectionModel().getSelectedIndex();
-        if (selected >= 0) {
-            cartListView.getItems().remove(selected);
+        java.util.Map<String, String> selected = cartTableView.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            cartTableView.getItems().remove(selected);
             updateTotalPrice();
             
             // AUTO UPDATE DISKON saat item dihapus
@@ -565,13 +653,13 @@ public class PosView {
      * Handle clear cart
      */
     private void handleClearCart() {
-        if (!cartListView.getItems().isEmpty()) {
+        if (!cartTableView.getItems().isEmpty()) {
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle("Konfirmasi");
             confirm.setHeaderText(null);
             confirm.setContentText("Kosongkan keranjang?");
             if (confirm.showAndWait().get() == ButtonType.OK) {
-                cartListView.getItems().clear();
+                cartTableView.getItems().clear();
                 updateTotalPrice();
             }
         }
@@ -582,7 +670,7 @@ public class PosView {
      */
     private void handleCheckout(ComboBox<String> paymentCombo, TextField amountField, Label changeLabel, 
                                 RadioButton noDiscount, Label itemsLabel, Label subtotalLabel, Label discountLabel) {
-        if (cartListView.getItems().isEmpty()) {
+        if (cartTableView.getItems().isEmpty()) {
             showAlert("Peringatan", "Keranjang masih kosong!");
             return;
         }
@@ -622,24 +710,27 @@ public class PosView {
         receipt.append("ITEM BELANJA:\n");
         receipt.append("───────────────────────────────────────────────────────────────────────\n");
         
-        // List item belanja
-        for (String item : cartListView.getItems()) {
-            receipt.append(item).append("\n");
+        // List item belanja dari TableView
+        for (java.util.Map<String, String> item : cartTableView.getItems()) {
+            String line = String.format("%s %-20s %4s x Rp %10s = Rp %10s", 
+                item.get("kode"), item.get("nama"), item.get("qty"), 
+                item.get("harga"), item.get("subtotal"));
+            receipt.append(line).append("\n");
         }
         
         receipt.append("───────────────────────────────────────────────────────────────────────\n");
-        receipt.append(String.format("TOTAL: Rp %,d\n", (long)total));
+        receipt.append(String.format("TOTAL: Rp %,d\n", (long)total).replace(",", "."));
         receipt.append(String.format("Metode Pembayaran: %s\n", paymentMethod));
         
         if ("E-Wallet".equals(paymentMethod)) {
             receipt.append(String.format("Ref: %s\n", ewalletRef));
-            receipt.append(String.format("Jumlah Pembayaran: Rp %,d\n", (long)total));
+            receipt.append(String.format("Jumlah Pembayaran: Rp %,d\n", (long)total).replace(",", "."));
         } else {
-            receipt.append(String.format("Jumlah Pembayaran: Rp %,d\n", (long)amountPaid));
+            receipt.append(String.format("Jumlah Pembayaran: Rp %,d\n", (long)amountPaid).replace(",", "."));
             if (change >= 0) {
-                receipt.append(String.format("Kembalian: Rp %,d\n", (long)change));
+                receipt.append(String.format("Kembalian: Rp %,d\n", (long)change).replace(",", "."));
             } else {
-                receipt.append(String.format("Kurang: Rp %,d\n", (long)Math.abs(change)));
+                receipt.append(String.format("Kurang: Rp %,d\n", (long)Math.abs(change)).replace(",", "."));
             }
         }
         
@@ -665,7 +756,7 @@ public class PosView {
         System.out.println(receipt.toString());
         
         // Reset semua UI components setelah transaksi berhasil
-        cartListView.getItems().clear();
+        cartTableView.getItems().clear();
         amountField.clear();
         changeLabel.setText("Kembalian: Rp 0");
         changeLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #2c3e50; -fx-font-weight: bold;");
@@ -783,7 +874,11 @@ public class PosView {
      * Get total items di keranjang
      */
     private int getTotalItems() {
-        return cartListView.getItems().size();
+        int total = 0;
+        for (java.util.Map<String, String> item : cartTableView.getItems()) {
+            total += Integer.parseInt(item.get("qty"));
+        }
+        return total;
     }
     
     /**
@@ -791,35 +886,24 @@ public class PosView {
      */
     private void updateSummary(Label itemsLabel, Label subtotalLabel, 
                                Label discountLabel, Label totalLabel, int discountPercent) {
-        double subtotal = 0;
+        long subtotal = 0;
         
         // Hitung subtotal dari semua item di keranjang
-        for (String item : cartListView.getItems()) {
-            // Parse format: "PXXX - Nama - Rp XXX.XXX" x QTY
-            String[] parts = item.split(" x");
-            if (parts.length >= 2) {
-                int qty = Integer.parseInt(parts[parts.length - 1]);
-                
-                String itemInfo = parts[0];
-                int priceStartIdx = itemInfo.lastIndexOf("Rp ");
-                if (priceStartIdx != -1) {
-                    String priceStr = itemInfo.substring(priceStartIdx + 3).replaceAll("[^0-9]", "");
-                    if (!priceStr.isEmpty()) {
-                        double price = Double.parseDouble(priceStr);
-                        subtotal += price * qty;
-                    }
-                }
+        for (java.util.Map<String, String> item : cartTableView.getItems()) {
+            String subtotalStr = item.get("subtotal").replaceAll("[^0-9]", "");
+            if (!subtotalStr.isEmpty()) {
+                subtotal += Long.parseLong(subtotalStr);
             }
         }
         
         // Hitung diskon
-        double discountAmount = (subtotal * discountPercent) / 100;
-        double total = subtotal - discountAmount;
+        long discountAmount = (subtotal * discountPercent) / 100;
+        long total = subtotal - discountAmount;
         
         // Update labels
-        subtotalLabel.setText(String.format("Subtotal: Rp %,d", (long)subtotal));
-        discountLabel.setText(String.format("Diskon (%d%%): -Rp %,d", discountPercent, (long)discountAmount));
-        totalLabel.setText(String.format("TOTAL: Rp %,d", (long)total));
+        subtotalLabel.setText(String.format("Subtotal: Rp %,d", subtotal).replace(",", "."));
+        discountLabel.setText(String.format("Diskon (%d%%): -Rp %,d", discountPercent, discountAmount).replace(",", "."));
+        totalLabel.setText(String.format("TOTAL: Rp %,d", total).replace(",", "."));
     }
     
     /**

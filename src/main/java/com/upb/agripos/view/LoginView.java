@@ -97,6 +97,12 @@ public class LoginView {
         passwordVisibleField.setPromptText("Masukkan password");
         passwordVisibleField.setPrefWidth(300);
         passwordVisibleField.setStyle("-fx-padding: 10; -fx-font-size: 12;");
+        
+        // Use StackPane to prevent column shift when showing/hiding password
+        javafx.scene.layout.StackPane passwordStackPane = new javafx.scene.layout.StackPane();
+        passwordStackPane.setPrefWidth(300);
+        passwordStackPane.setPrefHeight(40);
+        passwordStackPane.getChildren().addAll(passwordField, passwordVisibleField);
         passwordVisibleField.setVisible(false);
         
         CheckBox showPasswordCheck = new CheckBox("Tampilkan Password");
@@ -210,7 +216,7 @@ public class LoginView {
             usernameLabel,
             usernameField,
             passwordLabel,
-            new VBox(3, new HBox(passwordField, passwordVisibleField), showPasswordCheck),
+            new VBox(3, passwordStackPane, showPasswordCheck),
             roleLabel,
             roleBox,
             hintLabel,

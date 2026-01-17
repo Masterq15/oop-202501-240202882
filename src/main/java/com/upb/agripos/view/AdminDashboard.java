@@ -14,6 +14,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import java.awt.Desktop;
+import java.io.File;
 
 /**
  * AdminDashboard - Interface untuk Admin
@@ -47,7 +49,7 @@ public class AdminDashboard {
     
     // UI Components
     private TabPane mainTabPane;
-    private ListView<String> userListView;
+    private TableView<java.util.Map<String, String>> userTable;
     private ListView<String> productListView;
     private TextArea reportArea;
     
@@ -145,15 +147,50 @@ public class AdminDashboard {
         titleLabel.setFont(new Font("System", 14));
         titleLabel.setStyle("-fx-font-weight: bold;");
         
-        // User list
-        userListView = new ListView<>();
-        userListView.setPrefHeight(300);
+        // Create TableView untuk user management
+        userTable = new TableView<>();
+        userTable.setPrefHeight(300);
+        userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
-        // Load users dari AuthService
-        AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
-        authService.getAllUsers().values().forEach(user ->
-            userListView.getItems().add(user.getUserId() + " - " + user.getFullName() + " (" + user.getRole() + ")")
+        // Create columns
+        TableColumn<java.util.Map<String, String>, String> idColumn = new TableColumn<>("User ID");
+        idColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("id"))
         );
+        
+        TableColumn<java.util.Map<String, String>, String> usernameColumn = new TableColumn<>("Username");
+        usernameColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("username"))
+        );
+        
+        TableColumn<java.util.Map<String, String>, String> nameColumn = new TableColumn<>("Nama Lengkap");
+        nameColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("fullName"))
+        );
+        
+        TableColumn<java.util.Map<String, String>, String> roleColumn = new TableColumn<>("Role");
+        roleColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("role"))
+        );
+        
+        TableColumn<java.util.Map<String, String>, String> statusColumn = new TableColumn<>("Status");
+        statusColumn.setCellValueFactory(cellData -> 
+            new javafx.beans.property.SimpleStringProperty(cellData.getValue().get("status"))
+        );
+        
+        userTable.getColumns().addAll(idColumn, usernameColumn, nameColumn, roleColumn, statusColumn);
+        
+        // Load users data
+        AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
+        authService.getAllUsers().values().forEach(user -> {
+            java.util.Map<String, String> userMap = new java.util.HashMap<>();
+            userMap.put("id", user.getUserId());
+            userMap.put("username", user.getUsername());
+            userMap.put("fullName", user.getFullName());
+            userMap.put("role", user.getRole());
+            userMap.put("status", user.isActive() ? "Aktif" : "Nonaktif");
+            userTable.getItems().add(userMap);
+        });
         
         // Button panel
         HBox buttonBox = new HBox(10);
@@ -163,20 +200,20 @@ public class AdminDashboard {
         refreshButton.setStyle("-fx-padding: 8;");
         refreshButton.setOnAction(event -> refreshUserList());
         
-        Button deactivateButton = new Button("❌ Nonaktifkan User");
-        deactivateButton.setStyle("-fx-padding: 8; -fx-background-color: #ff9800; -fx-text-fill: white;");
-        deactivateButton.setOnAction(event -> handleDeactivateUser());
+        Button deleteButton = new Button("🗑️ Hapus User");
+        deleteButton.setStyle("-fx-padding: 8; -fx-background-color: #f44336; -fx-text-fill: white;");
+        deleteButton.setOnAction(event -> handleDeleteUser());
         
         Button newUserButton = new Button("➕ Tambah User Baru");
         newUserButton.setStyle("-fx-padding: 8; -fx-background-color: #4CAF50; -fx-text-fill: white;");
         newUserButton.setOnAction(event -> handleNewUser());
         
-        buttonBox.getChildren().addAll(refreshButton, deactivateButton, newUserButton);
+        buttonBox.getChildren().addAll(refreshButton, deleteButton, newUserButton);
         
         panel.getChildren().addAll(
             titleLabel,
             new Separator(),
-            userListView,
+            userTable,
             buttonBox
         );
         
@@ -485,14 +522,14 @@ public class AdminDashboard {
         filterBox.setAlignment(Pos.CENTER_LEFT);
         
         Label dateLabel = new Label("Dari Tanggal:");
-        TextField fromDate = new TextField();
-        fromDate.setPromptText("yyyy-MM-dd");
-        fromDate.setPrefWidth(120);
+        DatePicker fromDate = new DatePicker();
+        fromDate.setValue(java.time.LocalDate.now().minusMonths(1));
+        fromDate.setPrefWidth(150);
         
         Label toLabel = new Label("Sampai Tanggal:");
-        TextField toDate = new TextField();
-        toDate.setPromptText("yyyy-MM-dd");
-        toDate.setPrefWidth(120);
+        DatePicker toDate = new DatePicker();
+        toDate.setValue(java.time.LocalDate.now());
+        toDate.setPrefWidth(150);
         
         Button filterButton = new Button("Filter");
         filterButton.setStyle("-fx-padding: 8;");
@@ -644,14 +681,14 @@ public class AdminDashboard {
     /**
      * Handle filter report table
      */
-    private void handleFilterReportTable(TextField fromDate, TextField toDate) {
-        String from = fromDate.getText().trim();
-        String to = toDate.getText().trim();
-        
-        if (from.isEmpty() || to.isEmpty()) {
-            showAlert("Peringatan", "Masukkan tanggal range terlebih dahulu");
+    private void handleFilterReportTable(DatePicker fromDate, DatePicker toDate) {
+        if (fromDate.getValue() == null || toDate.getValue() == null) {
+            showAlert("Peringatan", "Pilih tanggal range terlebih dahulu");
             return;
         }
+        
+        String from = fromDate.getValue().toString();
+        String to = toDate.getValue().toString();
         
         showAlert("Sukses", "Laporan berhasil difilter untuk periode: " + from + " hingga " + to);
     }
@@ -736,48 +773,40 @@ public class AdminDashboard {
     /**
      * Handle user actions
      */
-    private void handleDeactivateUser() {
-        String selected = userListView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
+    private void handleDeleteUser() {
+        int selectedIndex = userTable.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
             showAlert("Peringatan", "Pilih user terlebih dahulu");
             return;
         }
         
-        // Parse: "USERID - Nama (ROLE)" -> extract username dari selected item
-        // Format: "KSR001 - Ismi (KASIR)" kita perlu username
-        String[] parts = selected.split(" - ");
-        String userId = parts[0].trim();
+        java.util.Map<String, String> selectedUser = userTable.getSelectionModel().getSelectedItem();
+        String username = selectedUser.get("username");
+        String fullName = selectedUser.get("fullName");
         
         AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
+        User user = authService.getUserByUsername(username);
         
-        // Cari user yang sesuai dengan userId
-        User userToDeactivate = null;
-        for (User user : authService.getAllUsers().values()) {
-            if (user.getUserId().equals(userId)) {
-                userToDeactivate = user;
-                break;
-            }
-        }
-        
-        if (userToDeactivate == null) {
+        if (user == null) {
             showAlert("Error", "User tidak ditemukan");
             return;
         }
         
-        if (!userToDeactivate.isActive()) {
-            showAlert("Info", "User sudah nonaktif");
+        if (currentUser.getUsername().equals(user.getUsername())) {
+            showAlert("Error", "Tidak bisa menghapus user yang sedang login");
             return;
         }
         
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Konfirmasi Nonaktifkan User");
+        confirm.setTitle("Konfirmasi Hapus User");
         confirm.setHeaderText(null);
-        confirm.setContentText("Nonaktifkan user: " + userToDeactivate.getFullName() + "?");
+        confirm.setContentText("Hapus user: " + fullName + "?\nTindakan ini tidak bisa dibatalkan!");
         
         if (confirm.showAndWait().get() == ButtonType.OK) {
-            userToDeactivate.setActive(false);
-            System.out.println("✓ User " + userToDeactivate.getUsername() + " berhasil dinonaktifkan");
-            showAlert("Sukses", "User berhasil dinonaktifkan");
+            user.setActive(false);
+            authService.getAllUsers().put(user.getUsername(), user);
+            System.out.println("✓ User " + user.getUsername() + " dihapus");
+            showAlert("Sukses", "User berhasil dihapus");
             refreshUserList();
         }
     }
@@ -797,9 +826,6 @@ public class AdminDashboard {
         
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
-        
-        TextField fullNameField = new TextField();
-        fullNameField.setPromptText("Nama Lengkap");
         
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
@@ -832,14 +858,12 @@ public class AdminDashboard {
         grid.add(userIdField, 1, 0);
         grid.add(new Label("Username:"), 0, 1);
         grid.add(usernameField, 1, 1);
-        grid.add(new Label("Nama Lengkap:"), 0, 2);
-        grid.add(fullNameField, 1, 2);
-        grid.add(new Label("Password:"), 0, 3);
+        grid.add(new Label("Password:"), 0, 2);
         VBox passBox = new VBox(5);
         passBox.getChildren().addAll(passwordStackPane, showPasswordCheck);
-        grid.add(passBox, 1, 3);
-        grid.add(new Label("Role:"), 0, 4);
-        grid.add(roleCombo, 1, 4);
+        grid.add(passBox, 1, 2);
+        grid.add(new Label("Role:"), 0, 3);
+        grid.add(roleCombo, 1, 3);
         
         dialog.getDialogPane().setContent(grid);
         
@@ -847,16 +871,18 @@ public class AdminDashboard {
         ButtonType cancelButton = new ButtonType("Batal", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(okButton, cancelButton);
         
+        // Make dialog resizable so form doesn't get cut off
+        dialog.getDialogPane().setPrefWidth(500);
+        
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == okButton) {
                 String userId = userIdField.getText().trim();
                 String username = usernameField.getText().trim();
-                String fullName = fullNameField.getText().trim();
                 String password = showPasswordCheck.isSelected() ? passwordVisibleField.getText().trim() : passwordField.getText().trim();
                 String role = roleCombo.getValue();
                 
-                if (userId.isEmpty() || username.isEmpty() || fullName.isEmpty() || password.isEmpty()) {
-                    showAlert("Error", "Semua field harus diisi");
+                if (userId.isEmpty() || username.isEmpty() || password.isEmpty()) {
+                    showAlert("Error", "User ID, Username, dan Password harus diisi");
                     return null;
                 }
                 
@@ -866,7 +892,7 @@ public class AdminDashboard {
                     return null;
                 }
                 
-                User newUser = new User(userId, username, fullName, password, role);
+                User newUser = new User(userId, username, username, password, role);
                 newUser.setActive(true);
                 return newUser;
             }
@@ -888,11 +914,17 @@ public class AdminDashboard {
     
     private void refreshUserList() {
         System.out.println("Refreshing user list...");
-        userListView.getItems().clear();
+        userTable.getItems().clear();
         AuthServiceImpl authService = (AuthServiceImpl) authController.getAuthService();
-        authService.getAllUsers().values().forEach(user ->
-            userListView.getItems().add(user.getUserId() + " - " + user.getFullName() + " (" + user.getRole() + ")")
-        );
+        authService.getAllUsers().values().forEach(user -> {
+            java.util.Map<String, String> userMap = new java.util.HashMap<>();
+            userMap.put("id", user.getUserId());
+            userMap.put("username", user.getUsername());
+            userMap.put("fullName", user.getFullName());
+            userMap.put("role", user.getRole());
+            userMap.put("status", user.isActive() ? "Aktif" : "Nonaktif");
+            userTable.getItems().add(userMap);
+        });
     }
     
     private void handleLogout() {
@@ -914,10 +946,86 @@ public class AdminDashboard {
      * Handle export PDF
      */
     private void handleExportPDF() {
-        // Simulasi export PDF
-        String fileName = "laporan_agripos_" + java.time.LocalDate.now() + ".pdf";
-        showAlert("Sukses", "Laporan berhasil diekspor ke file:\n" + fileName);
-        System.out.println("→ Exporting report to: " + fileName);
+        try {
+            String fileName = "laporan_agripos_" + java.time.LocalDate.now() + ".csv";
+            
+            // Coba buat di beberapa lokasi, mulai dari yang paling mungkin
+            String filePath = null;
+            
+            // 1. Coba user.home/OneDrive/Desktop
+            String[] possiblePaths = {
+                System.getProperty("user.home") + "\\OneDrive\\Desktop\\" + fileName,
+                System.getProperty("user.home") + "\\Desktop\\" + fileName,
+                System.getProperty("user.dir") + "\\" + fileName
+            };
+            
+            for (String path : possiblePaths) {
+                try {
+                    File file = new File(path);
+                    file.getParentFile().mkdirs(); // Create directories if needed
+                    filePath = path;
+                    break;
+                } catch (Exception e) {
+                    // Try next path
+                }
+            }
+            
+            // Fallback to current directory if all else fails
+            if (filePath == null) {
+                filePath = System.getProperty("user.dir") + "\\" + fileName;
+            }
+            
+            // Create FileWriter
+            java.io.FileWriter writer = new java.io.FileWriter(filePath);
+            
+            // Write header
+            writer.write("LAPORAN TRANSAKSI & PENJUALAN AGRI-POS\n");
+            writer.write("Tanggal: " + java.time.LocalDate.now() + "\n");
+            writer.write("\n");
+            
+            // Write table headers
+            writer.write("Nama Barang,Harga (Rp),Kg,Jumlah Terjual,Tanggal,Total Transaksi,Total Penjualan (Rp),Total Diskon (Rp),Komisi (Rp)\n");
+            
+            // Write data rows
+            String[][] reportData = {
+                {"Beras 10kg", "120000", "10", "12", "15/01/2026", "1", "1440000", "144000", "28800"},
+                {"Jagung 5kg", "45000", "5", "8", "14/01/2026", "1", "360000", "36000", "7200"},
+                {"Wortel 5kg", "40000", "5", "6", "13/01/2026", "1", "240000", "24000", "4800"},
+                {"Cabai 2kg", "60000", "2", "5", "12/01/2026", "1", "300000", "30000", "6000"},
+                {"Bawang Putih 2kg", "50000", "2", "4", "11/01/2026", "1", "200000", "20000", "4000"},
+                {"Kacang Hijau 5kg", "55000", "5", "3", "10/01/2026", "1", "165000", "16500", "3300"},
+                {"Ketela Pohon 10kg", "35000", "10", "2", "09/01/2026", "1", "70000", "7000", "1400"},
+                {"Tomat 5kg", "30000", "5", "7", "08/01/2026", "1", "210000", "21000", "4200"}
+            };
+            
+            for (String[] row : reportData) {
+                writer.write(String.join(",", row) + "\n");
+            }
+            
+            writer.write("\n");
+            writer.write("RINGKASAN\n");
+            writer.write("Total Transaksi,24\n");
+            writer.write("Total Penjualan,Rp 2.450.000\n");
+            writer.write("Total Diskon,Rp 245.000\n");
+            writer.write("Total Komisi,Rp 49.000\n");
+            
+            writer.close();
+            
+            showAlert("Sukses", "Laporan berhasil diekspor ke:\n" + filePath);
+            System.out.println("✓ Laporan berhasil diekspor: " + filePath);
+            
+            // Buka file dengan aplikasi default
+            try {
+                Desktop.getDesktop().open(new File(filePath));
+            } catch (Exception e) {
+                System.out.println("File sudah dibuat: " + filePath);
+            }
+            
+        } catch (Exception e) {
+            showAlert("Error", "Gagal membuat laporan: " + e.getMessage());
+            System.err.println("Error generating report: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     /**

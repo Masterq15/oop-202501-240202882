@@ -8,17 +8,17 @@ import java.sql.SQLException;
  * DatabaseConnection - Connection Management
  * Person A - DATABASE MASTER
  * 
- * Simple JDBC connection tanpa HikariCP
+ * Simple JDBC connection untuk PostgreSQL
  */
 public class DatabaseConnection {
     private static DatabaseConnection instance;
     private Connection connection;
     
     // Database Configuration
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/agripos";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
-    private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/agripos";
+    private static final String DB_USER = "postgres";
+    private static final String DB_PASSWORD = "postgres";
+    private static final String DB_DRIVER = "org.postgresql.Driver";
     
     /**
      * Private constructor untuk singleton pattern

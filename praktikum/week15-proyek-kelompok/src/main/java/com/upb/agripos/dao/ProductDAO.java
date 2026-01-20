@@ -1,46 +1,41 @@
 package com.upb.agripos.dao;
 
 import com.upb.agripos.model.Product;
-import com.upb.agripos.exception.DatabaseException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ProductDAO Interface - Abstraction untuk Product CRUD
+ * ProductDAO Interface & Base Implementation
+ * Person A - DATABASE MASTER
  * 
- * Implementer: ProductDAOImpl (JDBC + PostgreSQL)
- * 
- * Created by: [Person A - Database Layer]
- * Last modified: 
+ * Interface untuk operasi CRUD Product
+ * Implementasi menggunakan JDBC dengan connection pooling
  */
 public interface ProductDAO {
-
+    
     /**
-     * Tambah produk baru
+     * Insert product baru
      */
-    boolean insert(Product product) throws DatabaseException;
-
+    boolean insert(Product product);
+    
     /**
-     * Cari produk by kode
+     * Update product yang sudah ada
      */
-    Product findByCode(String code) throws DatabaseException;
-
+    boolean update(Product product);
+    
     /**
-     * Cari semua produk
+     * Delete product berdasarkan ID
      */
-    List<Product> findAll() throws DatabaseException;
-
+    boolean delete(String productId);
+    
     /**
-     * Update produk (termasuk stok)
+     * Cari product berdasarkan ID
      */
-    boolean update(Product product) throws DatabaseException;
-
+    Product findById(String productId);
+    
     /**
-     * Hapus produk by kode
+     * Ambil semua product
      */
-    boolean delete(String code) throws DatabaseException;
-
-    /**
-     * Cari produk dengan status tertentu (OFR-4)
-     */
-    List<Product> findByStatus(String status) throws DatabaseException;
+    List<Product> findAll();
 }

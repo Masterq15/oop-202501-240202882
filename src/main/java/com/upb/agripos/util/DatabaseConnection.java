@@ -8,17 +8,20 @@ import java.sql.SQLException;
  * DatabaseConnection - Connection Management
  * Person A - DATABASE MASTER
  * 
- * Simple JDBC connection tanpa HikariCP
+ * PostgreSQL JDBC Connection untuk integration dengan pgAdmin
+ * Server: localhost (pgAdmin default)
+ * Port: 5432 (PostgreSQL default)
+ * Database: agripos
  */
 public class DatabaseConnection {
     private static DatabaseConnection instance;
     private Connection connection;
     
-    // Database Configuration
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/agripos";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
-    private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
+    // Database Configuration - PostgreSQL with pgAdmin
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/agripos";
+    private static final String DB_USER = "postgres";
+    private static final String DB_PASSWORD = "postgres";
+    private static final String DB_DRIVER = "org.postgresql.Driver";
     
     /**
      * Private constructor untuk singleton pattern
@@ -39,11 +42,12 @@ public class DatabaseConnection {
         try {
             Class.forName(DB_DRIVER);
         } catch (ClassNotFoundException e) {
-            throw new SQLException("MySQL JDBC Driver tidak ditemukan", e);
+            throw new SQLException("PostgreSQL JDBC Driver tidak ditemukan. Pastikan postgresql-xx.jar di classpath", e);
         }
         
         // Create Connection
         this.connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        System.out.println("✓ PostgreSQL Connection established: " + DB_URL);
     }
     
     

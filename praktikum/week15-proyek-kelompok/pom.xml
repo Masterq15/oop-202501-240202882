@@ -103,6 +103,10 @@
 
     <!-- Build Configuration -->
     <build>
+        <!-- Source directory pointing to parent /src structure -->
+        <sourceDirectory>../../src/main/java</sourceDirectory>
+        <testSourceDirectory>../../src/test/java</testSourceDirectory>
+
         <plugins>
             <!-- Compiler Plugin -->
             <plugin>
@@ -122,7 +126,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.upb.agripos.AppJavaFX</mainClass>
+                    <mainClass>com.upb.agripos.Launcher</mainClass>
                 </configuration>
             </plugin>
 
@@ -174,7 +178,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.upb.agripos.AppJavaFX</mainClass>
+                                    <mainClass>com.upb.agripos.Launcher</mainClass>
                                 </transformer>
                             </transformers>
                             <finalName>${project.artifactId}-${project.version}-shaded</finalName>

@@ -1007,6 +1007,35 @@ public class PosView {
     }
     
     /**
+     * Refresh product list dari database
+     */
+    public void refreshProductList() {
+        if (productService != null) {
+            try {
+                java.util.List<com.upb.agripos.model.Product> products = productService.getAllProducts();
+                allProducts.clear();
+                
+                for (com.upb.agripos.model.Product product : products) {
+                    java.util.Map<String, String> row = new java.util.HashMap<>();
+                    row.put("kode", product.getCode());
+                    row.put("nama", product.getName());
+                    row.put("harga", String.format("Rp %,d", (long)product.getPrice()));
+                    row.put("stok", String.valueOf(product.getStock()));
+                    allProducts.add(row);
+                }
+                
+                productTableView.getItems().clear();
+                productTableView.getItems().addAll(allProducts);
+                productTableView.refresh();
+                
+                System.out.println("✓ Product list refreshed from database");
+            } catch (Exception e) {
+                System.err.println("Error refreshing products: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
      * Handle tambah stok - menampilkan dialog input untuk menambah stok produk
      */
     private void handleAddStock(java.util.Map<String, String> product) {

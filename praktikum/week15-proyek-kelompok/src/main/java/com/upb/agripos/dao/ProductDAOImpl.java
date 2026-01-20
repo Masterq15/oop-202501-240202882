@@ -1,54 +1,49 @@
 package com.upb.agripos.dao;
 
-import com.upb.agripos.exception.DatabaseException;
 import com.upb.agripos.model.Product;
-import java.util.List;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * ProductDAOImpl - Implementation dari ProductDAO interface
+ * ProductDAOImpl - Database Access Object untuk Product
+ * Implementasi menggunakan JDBC dengan connection pooling
  * 
- * JDBC implementation untuk Product CRUD operations
- * Database: PostgreSQL
- * 
- * Created by: [Person A - Database]
- * Last modified: 
+ * NOTA: Implementation digerakkan ke week15-proyek-kelompok
+ * Disini saat ini hanya stub untuk kompilasi collaborative project
  */
 public class ProductDAOImpl implements ProductDAO {
-    
+    private Connection connection;
+
+    public ProductDAOImpl(Connection connection) {
+        this.connection = connection;
+    }
+
     @Override
-    public boolean insert(com.upb.agripos.model.Product product) throws DatabaseException {
-        // TODO: Implement
+    public boolean insert(Product product) {
+        // TODO: Implement in collaborative project
         return false;
     }
-    
+
     @Override
-    public com.upb.agripos.model.Product findByCode(String code) throws DatabaseException {
-        // TODO: Implement
+    public List<Product> findAll() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Product findById(String productId) {
         return null;
     }
-    
+
     @Override
-    public java.util.List<com.upb.agripos.model.Product> findAll() throws DatabaseException {
-        // TODO: Implement
-        return new java.util.ArrayList<>();
-    }
-    
-    @Override
-    public boolean update(com.upb.agripos.model.Product product) throws DatabaseException {
+    public boolean update(Product product) {
         // TODO: Implement
         return false;
     }
-    
+
     @Override
-    public boolean delete(String productCode) throws DatabaseException {
+    public boolean delete(String productId) {
         // TODO: Implement
         return false;
-    }
-    
-    @Override
-    public java.util.List<com.upb.agripos.model.Product> findByStatus(String status) throws DatabaseException {
-        // TODO: Implement
-        return new java.util.ArrayList<>();
     }
 }

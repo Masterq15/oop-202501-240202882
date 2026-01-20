@@ -1,216 +1,275 @@
 package com.upb.agripos.view;
 
-import com.upb.agripos.service.AuthService;
-import com.upb.agripos.exception.AuthenticationException;
+import com.upb.agripos.controller.AuthController;
 import com.upb.agripos.model.User;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
 
 /**
- * LoginView - View untuk halaman login (FR-5)
- * 
- * UI Components: Username field, password field, login button
- * Role-based access untuk KASIR dan ADMIN
- * 
- * Credentials:
- * - KASIR: ismi / password123
- * - ADMIN: firly / admin123
- * 
- * Created by: [Person D - Frontend]
- * Last modified: 2026-01-15
+ * Login View - JavaFX Form untuk login user
+ * Mendukung 2 role: KASIR dan ADMIN
+ * Person D - Frontend Week 15
  */
-public class LoginView extends VBox {
+public class LoginView {
     
-    private AuthService authService;
+    private Stage stage;
+    private AuthController authController;
+    private Scene scene;
     
-    // UI Components
-    private TextField txtUsername;
-    private PasswordField txtPassword;
-    private Button btnLogin;
-    private Label lblMessage;
-    private Label lblTitle;
-    private Label lblVersion;
-    
-    // Callback interface untuk login sukses
-    public interface LoginCallback {
+    @FunctionalInterface
+    public interface NavigationCallback {
         void onLoginSuccess(User user);
     }
     
-    private LoginCallback loginCallback;
+    private static NavigationCallback navCallback;
     
-    public LoginView(AuthService authService) {
-        this.authService = authService;
-        initComponents();
-        layoutComponents();
+    public static void setNavCallback(NavigationCallback callback) {
+        navCallback = callback;
     }
     
-    private void initComponents() {
+    public LoginView(Stage stage, AuthController authController) {
+        this.stage = stage;
+        this.authController = authController;
+    }
+    
+    /**
+     * Create dan return login scene
+     */
+    public Scene createScene() {
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-padding: 20; -fx-background-color: #f5f5f5;");
+        
+        // Center: Login form
+        VBox centerBox = createLoginForm();
+        root.setCenter(centerBox);
+        
+        // Bottom: Footer
+        Label footerLabel = new Label("AGRI-POS System v1.0 | Week 15 Project");
+        footerLabel.setStyle("-fx-text-fill: #999; -fx-font-size: 10;");
+        HBox footerBox = new HBox();
+        footerBox.setAlignment(Pos.CENTER);
+        footerBox.getChildren().add(footerLabel);
+        root.setBottom(footerBox);
+        
+        this.scene = new Scene(root, 500, 600);
+        return scene;
+    }
+    
+    /**
+     * Create login form with username, password, role selector
+     */
+    private VBox createLoginForm() {
+        VBox formBox = new VBox(20);
+        formBox.setAlignment(Pos.CENTER);
+        formBox.setStyle("-fx-padding: 50;");
+        
         // Title
-        lblTitle = new Label("🛒 AGRI-POS");
-        lblTitle.setFont(Font.font("Arial", FontWeight.BOLD, 36));
-        lblTitle.setStyle("-fx-text-fill: #2E7D32;");
+        Label titleLabel = new Label("🔐 AGRI-POS LOGIN");
+        titleLabel.setFont(new Font("System", 24));
+        titleLabel.setStyle("-fx-font-weight: bold;");
         
-        Label lblSubtitle = new Label("Point of Sale System untuk Pertanian");
-        lblSubtitle.setFont(Font.font("Arial", 14));
-        lblSubtitle.setStyle("-fx-text-fill: #666666;");
+        // Subtitle
+        Label subtitleLabel = new Label("Sistem Point of Sale untuk Pertanian");
+        subtitleLabel.setStyle("-fx-text-fill: #666; -fx-font-size: 12;");
         
-        // Username field
-        txtUsername = new TextField();
-        txtUsername.setPromptText("Username");
-        txtUsername.setStyle("-fx-font-size: 14; -fx-padding: 10;");
-        txtUsername.setPrefHeight(40);
+        // Form fields
+        Label usernameLabel = new Label("Username:");
+        usernameLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Masukkan username");
+        usernameField.setPrefWidth(300);
+        usernameField.setStyle("-fx-padding: 10; -fx-font-size: 12;");
         
-        // Password field
-        txtPassword = new PasswordField();
-        txtPassword.setPromptText("Password");
-        txtPassword.setStyle("-fx-font-size: 14; -fx-padding: 10;");
-        txtPassword.setPrefHeight(40);
+        Label passwordLabel = new Label("Password:");
+        passwordLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Masukkan password");
+        passwordField.setPrefWidth(300);
+        passwordField.setStyle("-fx-padding: 10; -fx-font-size: 12;");
         
-        // Login button
-        btnLogin = new Button("🔐 LOGIN");
-        btnLogin.setPrefWidth(200);
-        btnLogin.setPrefHeight(45);
-        btnLogin.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-background-color: #2E7D32; -fx-text-fill: white;");
+        TextField passwordVisibleField = new TextField();
+        passwordVisibleField.setPromptText("Masukkan password");
+        passwordVisibleField.setPrefWidth(300);
+        passwordVisibleField.setStyle("-fx-padding: 10; -fx-font-size: 12;");
         
-        // Message label
-        lblMessage = new Label();
-        lblMessage.setFont(Font.font("Arial", 12));
-        lblMessage.setWrapText(true);
+        // Use StackPane to prevent column shift when showing/hiding password
+        javafx.scene.layout.StackPane passwordStackPane = new javafx.scene.layout.StackPane();
+        passwordStackPane.setPrefWidth(300);
+        passwordStackPane.setPrefHeight(40);
+        passwordStackPane.getChildren().addAll(passwordField, passwordVisibleField);
+        passwordVisibleField.setVisible(false);
         
-        // Version label
-        lblVersion = new Label("Test Credentials:\n" +
-                              "KASIR: ismi / password123\n" +
-                              "ADMIN: firly / admin123");
-        lblVersion.setFont(Font.font("Arial", 10));
-        lblVersion.setStyle("-fx-text-fill: #999999;");
-        lblVersion.setWrapText(true);
-        
-        // Setup button action
-        btnLogin.setOnAction(e -> handleLogin());
-        
-        // Setup enter key untuk submit
-        txtPassword.setOnKeyPressed(e -> {
-            if (e.getCode().toString().equals("ENTER")) {
-                handleLogin();
+        CheckBox showPasswordCheck = new CheckBox("Tampilkan Password");
+        showPasswordCheck.setStyle("-fx-font-size: 11;");
+        showPasswordCheck.setOnAction(e -> {
+            if (showPasswordCheck.isSelected()) {
+                passwordVisibleField.setText(passwordField.getText());
+                passwordVisibleField.setVisible(true);
+                passwordField.setVisible(false);
+            } else {
+                passwordField.setText(passwordVisibleField.getText());
+                passwordField.setVisible(true);
+                passwordVisibleField.setVisible(false);
             }
         });
-    }
-    
-    private void layoutComponents() {
-        setPadding(new Insets(40));
-        setAlignment(Pos.CENTER);
-        setStyle("-fx-background-color: #FFFFFF;");
-        setSpacing(20);
         
-        // Center login form
-        VBox formContainer = new VBox(15);
-        formContainer.setPrefWidth(400);
-        formContainer.setAlignment(Pos.CENTER);
-        formContainer.setStyle("-fx-background-color: #F5F5F5; -fx-padding: 30; -fx-border-radius: 10;");
+        // Role selector
+        Label roleLabel = new Label("Login sebagai:");
+        roleLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
+        HBox roleBox = new HBox(15);
+        roleBox.setAlignment(Pos.CENTER);
         
-        VBox titleBox = new VBox(5);
-        titleBox.setAlignment(Pos.CENTER);
-        titleBox.getChildren().addAll(lblTitle, new Label("Point of Sale System untuk Pertanian"));
+        RadioButton kasirRadio = new RadioButton("Kasir");
+        kasirRadio.setPrefWidth(100);
+        kasirRadio.setStyle("-fx-font-size: 12;");
+        kasirRadio.setSelected(true);
         
-        VBox inputBox = new VBox(10);
-        inputBox.setPrefWidth(Double.MAX_VALUE);
-        inputBox.getChildren().addAll(
-            new Label("Username:"),
-            txtUsername,
-            new Label("Password:"),
-            txtPassword
-        );
+        RadioButton adminRadio = new RadioButton("Admin");
+        adminRadio.setPrefWidth(100);
+        adminRadio.setStyle("-fx-font-size: 12;");
         
-        HBox buttonBox = new HBox(10);
+        ToggleGroup roleGroup = new ToggleGroup();
+        kasirRadio.setToggleGroup(roleGroup);
+        adminRadio.setToggleGroup(roleGroup);
+        
+        roleBox.getChildren().addAll(kasirRadio, adminRadio);
+        
+        // Demo credentials hint
+        Label hintLabel = new Label("Demo: username='ismi', password='password123' (Kasir)\n" +
+                                   "       username='firly', password='admin123' (Admin)");
+        hintLabel.setStyle("-fx-text-fill: #0066cc; -fx-font-size: 10; -fx-wrap-text: true;");
+        
+        // Buttons
+        HBox buttonBox = new HBox(15);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().add(btnLogin);
         
-        formContainer.getChildren().addAll(
-            titleBox,
+        Button loginButton = new Button("Login");
+        loginButton.setPrefWidth(120);
+        loginButton.setPrefHeight(40);
+        loginButton.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-background-color: #4CAF50; -fx-text-fill: white;");
+        
+        Button resetButton = new Button("Reset");
+        resetButton.setPrefWidth(120);
+        resetButton.setPrefHeight(40);
+        resetButton.setStyle("-fx-font-size: 14; -fx-background-color: #f44336; -fx-text-fill: white;");
+        
+        buttonBox.getChildren().addAll(loginButton, resetButton);
+        
+        // Status message
+        Label statusLabel = new Label();
+        statusLabel.setStyle("-fx-text-fill: #ff6600; -fx-font-size: 11;");
+        
+        // Event handlers
+        loginButton.setOnAction(event -> {
+            String username = usernameField.getText().trim();
+            String password = showPasswordCheck.isSelected() ? passwordVisibleField.getText().trim() : passwordField.getText().trim();
+            String role = kasirRadio.isSelected() ? "KASIR" : "ADMIN";
+            
+            System.out.println("[LOGIN] Username: " + username + ", Role: " + role);
+            
+            User loggedInUser = authController.handleLogin(username, password, role);
+            if (loggedInUser != null) {
+                System.out.println("[LOGIN] Login success! User: " + loggedInUser.getFullName() + ", Role: " + loggedInUser.getRole());
+                statusLabel.setText("✓ Login berhasil!");
+                statusLabel.setStyle("-fx-text-fill: #4CAF50;");
+                // Nanti akan pindah ke PosView atau AdminDashboard
+                System.out.println("[LOGIN] Calling showPosOrAdminView with user: " + loggedInUser.getFullName());
+                showPosOrAdminView(loggedInUser);
+            } else {
+                System.out.println("[LOGIN] Login failed!");
+                statusLabel.setText("✗ Login gagal! Username atau password salah.");
+                statusLabel.setStyle("-fx-text-fill: #ff0000;");
+                passwordField.clear();
+            }
+        });
+        
+        resetButton.setOnAction(event -> {
+            usernameField.clear();
+            passwordField.clear();
+            passwordVisibleField.clear();
+            showPasswordCheck.setSelected(false);
+            passwordField.setVisible(true);
+            passwordVisibleField.setVisible(false);
+            kasirRadio.setSelected(true);
+            statusLabel.setText("");
+        });
+        
+        // Allow Enter key to login
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode().toString().equals("ENTER")) {
+                loginButton.fire();
+            }
+        });
+        
+        passwordVisibleField.setOnKeyPressed(event -> {
+            if (event.getCode().toString().equals("ENTER")) {
+                loginButton.fire();
+            }
+        });
+        
+        // Add all components to form
+        formBox.getChildren().addAll(
+            titleLabel,
+            subtitleLabel,
             new Separator(),
-            inputBox,
+            usernameLabel,
+            usernameField,
+            passwordLabel,
+            new VBox(3, passwordStackPane, showPasswordCheck),
+            roleLabel,
+            roleBox,
+            hintLabel,
+            new Separator(),
             buttonBox,
-            lblMessage,
-            new Separator(),
-            lblVersion
+            statusLabel
         );
         
-        getChildren().add(formContainer);
+        return formBox;
     }
     
-    private void handleLogin() {
-        String username = txtUsername.getText().trim();
-        String password = txtPassword.getText();
+    /**
+     * Navigate ke PosView atau AdminDashboard berdasarkan role
+     */
+    private void showPosOrAdminView(User user) {
+        System.out.println("[NAV] showPosOrAdminView called");
+        System.out.println("[NAV] User: " + user.getFullName() + ", Role: " + user.getRole());
+        System.out.println("[NAV] navCallback is null? " + (navCallback == null));
         
-        // Clear message
-        lblMessage.setText("");
-        lblMessage.setStyle("");
-        
-        // Validasi input
-        if (username.isEmpty() || password.isEmpty()) {
-            showError("Username dan password harus diisi!");
-            return;
-        }
-        
-        try {
-            // Login attempt
-            User user = authService.login(username, password);
-            
-            // Success
-            showSuccess("Login berhasil! Selamat datang, " + user.getFullName());
-            
-            // Clear fields
-            txtUsername.clear();
-            txtPassword.clear();
-            
-            // Notify callback dengan delay 1.5 detik agar user bisa lihat success message
-            if (loginCallback != null) {
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(1500); // Tunggu 1.5 detik
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    javafx.application.Platform.runLater(() -> {
-                        loginCallback.onLoginSuccess(user);
-                    });
-                }).start();
+        if (navCallback != null) {
+            System.out.println("[NAV] Calling navCallback.onLoginSuccess()");
+            navCallback.onLoginSuccess(user);
+            System.out.println("[NAV] navCallback executed");
+        } else {
+            System.out.println("[NAV] navCallback is NULL!");
+            if (user.isAdmin()) {
+                System.out.println("→ Menampilkan Admin Dashboard");
+            } else {
+                System.out.println("→ Menampilkan POS View");
             }
-        } catch (AuthenticationException ex) {
-            showError(ex.getMessage());
         }
     }
     
-    private void showError(String message) {
-        lblMessage.setText("❌ " + message);
-        lblMessage.setStyle("-fx-text-fill: #D32F2F; -fx-font-weight: bold;");
+    /**
+     * Show error dialog
+     */
+    public void showError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
     
-    private void showSuccess(String message) {
-        lblMessage.setText("✅ " + message);
-        lblMessage.setStyle("-fx-text-fill: #388E3C; -fx-font-weight: bold;");
-    }
-    
-    // Setter untuk callback
-    public void setLoginCallback(LoginCallback callback) {
-        this.loginCallback = callback;
-    }
-    
-    // Getter methods
-    public TextField getTxtUsername() {
-        return txtUsername;
-    }
-    
-    public PasswordField getTxtPassword() {
-        return txtPassword;
-    }
-    
-    public Button getBtnLogin() {
-        return btnLogin;
+    /**
+     * Get scene
+     */
+    public Scene getScene() {
+        return scene;
     }
 }

@@ -1,63 +1,54 @@
 package com.upb.agripos.model;
 
 /**
- * User Model untuk FR-5 (Login & Role)
- * 
- * Attributes:
- * - userId: unique identifier (PK)
- * - username: nama login
- * - password: password (simple, untuk demo)
- * - fullName: nama lengkap
- * - role: KASIR / ADMIN
- * 
- * Created by: [Person D - Frontend/Auth]
- * Last modified: 
+ * Model class untuk User (Kasir / Admin)
+ * Person D - Frontend Week 15
  */
 public class User {
     private String userId;
     private String username;
     private String password;
     private String fullName;
-    private String role;  // KASIR, ADMIN
+    private String role; // "KASIR" atau "ADMIN"
+    private boolean active;
 
-    public static final String ROLE_KASIR = "KASIR";
-    public static final String ROLE_ADMIN = "ADMIN";
-
+    // Constructor
     public User(String userId, String username, String password, String fullName, String role) {
         this.userId = userId;
         this.username = username;
         this.password = password;
         this.fullName = fullName;
         this.role = role;
+        this.active = true;
     }
 
-    // Getters & Setters
+    // Getters
     public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-
     public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-
     public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
     public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
-
     public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public boolean isActive() { return active; }
 
-    // Helper: Check role
+    // Setters
+    public void setUserId(String userId) { this.userId = userId; }
+    public void setUsername(String username) { this.username = username; }
+    public void setPassword(String password) { this.password = password; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public void setRole(String role) { this.role = role; }
+    public void setActive(boolean active) { this.active = active; }
+
+    // Helper method
     public boolean isAdmin() {
-        return ROLE_ADMIN.equals(role);
+        return "ADMIN".equalsIgnoreCase(this.role);
     }
 
     public boolean isKasir() {
-        return ROLE_KASIR.equals(role);
+        return "KASIR".equalsIgnoreCase(this.role);
     }
 
     @Override
     public String toString() {
-        return fullName + " (" + role + ")";
+        return userId + " - " + fullName + " (" + role + ")";
     }
 }

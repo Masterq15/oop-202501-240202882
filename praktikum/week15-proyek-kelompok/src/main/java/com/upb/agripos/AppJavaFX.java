@@ -1,197 +1,182 @@
 package com.upb.agripos;
 
-import com.upb.agripos.service.*;
-import com.upb.agripos.model.User;
-import com.upb.agripos.view.*;
+import com.upb.agripos.controller.AuthController;
+import com.upb.agripos.service.AuthServiceImpl;
+import com.upb.agripos.service.ProductService;
+import com.upb.agripos.util.DatabaseConnection;
+import com.upb.agripos.view.AdminDashboard;
+import com.upb.agripos.view.LoginView;
+import com.upb.agripos.view.PosView;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import java.sql.Connection;
 
 /**
- * AppJavaFX - Main Entry Point untuk Agri-POS GUI
+ * Main Application Entry Point - Week 15 Collaborative Project
+ * Person D - Frontend/UI Layer
  * 
- * Fitur:
+ * Features:
+ * - Authentication dengan LoginView
  * - Role-based routing (KASIR -> PosView, ADMIN -> AdminDashboard)
- * - Session management
  * - Service layer integration
- * 
- * Week 15 - Proyek Kelompok
- * Created by: [Person D - Frontend]
- * Last modified: 2026-01-15
  */
 public class AppJavaFX extends Application {
-
+    
     private Stage primaryStage;
-    private Scene loginScene, posScene, adminScene;
-    private AuthService authService;
-    private ProductService productService;
-    private TransactionService transactionService;
-    private AuditLogService auditLogService;
-
+    private AuthController authController;
+    
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
         
-        // Initialize services (TODO: Connect to real database)
-        initializeServices();
+        System.out.println("=".repeat(70));
+        System.out.println("AGRI-POS System - Point of Sale untuk Pertanian");
+        System.out.println("Week 15 - Collaborative Project");
+        System.out.println("Person D - Frontend/UI");
+        System.out.println("=".repeat(70));
         
-        // Initialize main window
-        primaryStage.setTitle("🛒 Agri-POS - Point of Sale System");
-        primaryStage.setWidth(1200);
-        primaryStage.setHeight(800);
-        primaryStage.setOnCloseRequest(e -> handleLogout());
-        
-        // Create scenes
-        createLoginScene();
-        
-        // Show login scene first
-        primaryStage.setScene(loginScene);
-        primaryStage.show();
+        try {
+            // Initialize AuthService
+            AuthServiceImpl authService = new AuthServiceImpl();
+            
+            // Initialize AuthController
+            authController = new AuthController(authService);
+            System.out.println("✓ AuthController initialized");
+            
+            // Setup primary stage
+            primaryStage.setTitle("🛒 AGRI-POS - Point of Sale System");
+            primaryStage.setWidth(1200);
+            primaryStage.setHeight(800);
+            
+            // Show LoginView first
+            showLoginView();
+            
+            primaryStage.show();
+            System.out.println("✓ Application started successfully");
+            System.out.println("=".repeat(70));
+            
+        } catch (Exception e) {
+            System.err.println("✗ Error initializing application:");
+            e.printStackTrace();
+        }
     }
-
-    private void initializeServices() {
-        // Initialize services dengan hardcoded data untuk demo
-        authService = new AuthServiceImpl();
-        // productService = new ProductServiceImpl();  // TODO: Uncomment saat database siap
-        // transactionService = new TransactionServiceImpl();  // TODO: Uncomment saat database siap
-        // auditLogService = new AuditLogServiceImpl();  // TODO: Uncomment saat database siap
-        
-        // For now, create mock services untuk demo
-        productService = new ProductServiceImpl();  // Will use in-memory storage
-        transactionService = new TransactionServiceImpl();  // Will use in-memory storage
-        auditLogService = new AuditLogServiceImpl();  // Will use in-memory storage
-    }
-
-    private void createLoginScene() {
-        BorderPane loginRoot = new BorderPane();
-        LoginView loginView = new LoginView(authService);
-        loginRoot.setCenter(loginView);
-        
-        // Setup login callback
-        loginView.setLoginCallback(user -> {
+    
+    /**
+     * Display LoginView
+     */
+    private void showLoginView() {
+        LoginView loginView = new LoginView(primaryStage, authController);
+        LoginView.setNavCallback((user) -> {
             if (user.isAdmin()) {
-                showAdminDashboard(user);
-            } else if (user.isKasir()) {
-                showPosView(user);
+                showAdminDashboard();
+            } else {
+                showPosView();
             }
         });
-        
-        loginScene = new Scene(loginRoot, 1200, 800);
+        Scene scene = loginView.createScene();
+        primaryStage.setScene(scene);
+        System.out.println("→ LoginView displayed");
     }
-
-    private void showPosView(User user) {
+    
+    /**
+     * Display PosView untuk KASIR
+     */
+    private void showPosView() {
         try {
-            PosView posView = new PosView(productService, transactionService, authService, user);
+            System.out.println("[NAV] showPosView() called");
+            System.out.println("[NAV] Current user: " + (authController.getCurrentUser() != null ? authController.getCurrentUser().getFullName() : "NULL"));
             
-            // Setup PosView actions (TODO: Connect dengan business logic)
-            setupPosViewActions(posView);
+            ProductService productService = null;
             
-            BorderPane root = new BorderPane();
-            root.setCenter(posView);
+            // Try to get database connection and create ProductService
+            try {
+                System.out.println("[NAV] Getting database connection...");
+                Connection connection = DatabaseConnection.getInstance().getConnection();
+                System.out.println("[NAV] Connection obtained: " + (connection != null ? "SUCCESS" : "NULL"));
+                
+                if (connection != null) {
+                    productService = new ProductService(connection);
+                    System.out.println("[NAV] ProductService created");
+                }
+            } catch (Exception dbException) {
+                System.err.println("[NAV] Database connection failed: " + dbException.getMessage());
+                System.err.println("[NAV] Continuing without ProductService (database unavailable)");
+            }
             
-            // Add logout button
-            root.setTop(createTopBar(user, () -> handleLogout()));
+            // Create PosView and inject ProductService if available
+            PosView posView = new PosView(primaryStage, authController);
+            if (productService != null) {
+                posView.setProductService(productService);
+                System.out.println("[NAV] ProductService injected into PosView");
+            }
             
-            posScene = new Scene(root, 1200, 800);
-            primaryStage.setScene(posScene);
-            System.out.println("✅ PosView loaded successfully for: " + user.getFullName());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.err.println("❌ ERROR loading PosView: " + ex.getMessage());
-            showErrorAlert("Error", "Gagal memuat PosView: " + ex.getMessage());
+            PosView.setNavCallback(() -> showLoginView());
+            System.out.println("[NAV] Creating PosView scene...");
+            Scene scene = posView.createScene();
+            System.out.println("[NAV] Setting scene to primaryStage...");
+            primaryStage.setScene(scene);
+            
+            String userName = authController.getCurrentUser() != null ? authController.getCurrentUser().getFullName() : "Unknown";
+            System.out.println("✓ PosView displayed for: " + userName);
+        } catch (Exception e) {
+            System.err.println("✗ Error displaying PosView: " + e.getMessage());
+            System.err.println("✗ Full error:");
+            e.printStackTrace();
+            // Fallback: show LoginView
+            showLoginView();
         }
     }
-
-    private void showAdminDashboard(User user) {
+    
+    /**
+     * Display AdminDashboard untuk ADMIN
+     */
+    private void showAdminDashboard() {
         try {
-            AdminDashboard adminDash = new AdminDashboard(
-                productService, 
-                transactionService, 
-                auditLogService, 
-                user
-            );
+            System.out.println("[NAV] showAdminDashboard() called");
+            System.out.println("[NAV] Current user: " + (authController.getCurrentUser() != null ? authController.getCurrentUser().getFullName() : "NULL"));
             
-            // Setup AdminDashboard actions (TODO: Connect dengan business logic)
-            setupAdminDashboardActions(adminDash);
+            ProductService productService = null;
             
-            BorderPane root = new BorderPane();
-            root.setCenter(adminDash);
+            // Try to get database connection and create ProductService
+            try {
+                System.out.println("[NAV] Getting database connection...");
+                Connection connection = DatabaseConnection.getInstance().getConnection();
+                System.out.println("[NAV] Connection obtained: " + (connection != null ? "SUCCESS" : "NULL"));
+                
+                if (connection != null) {
+                    productService = new ProductService(connection);
+                    System.out.println("[NAV] ProductService created");
+                }
+            } catch (Exception dbException) {
+                System.err.println("[NAV] Database connection failed: " + dbException.getMessage());
+                System.err.println("[NAV] Continuing without ProductService (database unavailable)");
+            }
             
-            // Add logout button
-            root.setTop(createTopBar(user, () -> handleLogout()));
+            // Create AdminDashboard and inject ProductService if available
+            AdminDashboard adminDashboard = new AdminDashboard(primaryStage, authController);
+            if (productService != null) {
+                adminDashboard.setProductService(productService);
+                System.out.println("[NAV] ProductService injected into AdminDashboard");
+            }
             
-            adminScene = new Scene(root, 1200, 800);
-            primaryStage.setScene(adminScene);
-            System.out.println("✅ AdminDashboard loaded successfully for: " + user.getFullName());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.err.println("❌ ERROR loading AdminDashboard: " + ex.getMessage());
-            showErrorAlert("Error", "Gagal memuat AdminDashboard: " + ex.getMessage());
+            AdminDashboard.setNavCallback(() -> showLoginView());
+            System.out.println("[NAV] Creating AdminDashboard scene...");
+            Scene scene = adminDashboard.createScene();
+            System.out.println("[NAV] Setting scene to primaryStage...");
+            primaryStage.setScene(scene);
+            
+            String userName = authController.getCurrentUser() != null ? authController.getCurrentUser().getFullName() : "Unknown";
+            System.out.println("✓ AdminDashboard displayed for: " + userName);
+        } catch (Exception e) {
+            System.err.println("✗ Error displaying AdminDashboard: " + e.getMessage());
+            System.err.println("✗ Full error:");
+            e.printStackTrace();
+            // Fallback: show LoginView
+            showLoginView();
         }
     }
-
-    private javafx.scene.layout.HBox createTopBar(User user, Runnable logoutCallback) {
-        javafx.scene.layout.HBox topBar = new javafx.scene.layout.HBox(20);
-        topBar.setPadding(new javafx.geometry.Insets(10));
-        topBar.setStyle("-fx-background-color: #2E7D32; -fx-padding: 10;");
-        
-        javafx.scene.control.Label lblUser = new javafx.scene.control.Label(
-            "👤 " + user.getFullName() + " (" + user.getRole() + ")"
-        );
-        lblUser.setStyle("-fx-text-fill: white; -fx-font-size: 12;");
-        
-        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
-        javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
-        
-        javafx.scene.control.Button btnLogout = new javafx.scene.control.Button("🔐 Logout");
-        btnLogout.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11;");
-        btnLogout.setPrefHeight(30);
-        btnLogout.setOnAction(e -> logoutCallback.run());
-        
-        topBar.getChildren().addAll(lblUser, spacer, btnLogout);
-        return topBar;
-    }
-
-    private void setupPosViewActions(PosView posView) {
-        // TODO: Setup event handlers untuk:
-        // 1. Add product to cart
-        // 2. Remove product from cart
-        // 3. Clear cart
-        // 4. Checkout
-        // 5. Update product (only admin)
-        
-        System.out.println("✅ PosView initialized untuk: " + posView.getCurrentUser().getFullName());
-    }
-
-    private void setupAdminDashboardActions(AdminDashboard adminDash) {
-        // TODO: Setup event handlers untuk:
-        // 1. Add product
-        // 2. Update product
-        // 3. Delete product
-        // 4. Generate reports
-        // 5. Export reports
-        // 6. View audit logs
-        // 7. Backup/Restore database
-        
-        System.out.println("✅ AdminDashboard initialized");
-    }
-
-    private void handleLogout() {
-        authService.logout();
-        createLoginScene();
-        primaryStage.setScene(loginScene);
-        System.out.println("✅ Logout berhasil");
-    }
-
-    private void showErrorAlert(String title, String message) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
+    
     /**
      * Main entry point
      */

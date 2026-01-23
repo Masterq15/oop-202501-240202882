@@ -112,7 +112,6 @@ Admin bertanggung jawab untuk mengelola produk, monitoring stok, viewing laporan
 | ID | Fitur | Deskripsi | Implementasi | Status |
 |---|---|---|---|---|
 | **OFR-2** | Diskon/Promo | Flexible discount system (% dan fixed amount) | Strategy Pattern | ✅ |
-| **OFR-4** | Inventori Lanjutan | Auto-update product status (LOW_STOCK, DISCONTINUED) | Event-based | ✅ |
 | **OFR-6** | Audit Log | Complete activity logging (login, create, update, delete) | Logger service | ✅ |
 
 ### Model Data Utama
@@ -1762,7 +1761,6 @@ public class EWalletPayment implements PaymentMethod {
 | TC# | Fitur (OFR) | Skenario | Expected Output | Status |
 |---|---|---|---|---|
 | **MTC-017** | OFR-2: Diskon % | Apply 10% diskon ke subtotal 100000 | Diskon: 10000, Total: 90000 | ✅ PASS |
-| **MTC-018** | OFR-4: Low Stock Status | Produk stock < reorder level | Status auto-update ke LOW_STOCK | ✅ PASS |
 | **MTC-019** | OFR-6: Audit Log | Admin login & kasir transaksi | Logs recorded untuk login dan transaksi | ✅ PASS |
 
 ---
@@ -1937,6 +1935,7 @@ TOTAL:                      14/14 ✅ ALL PASSED
    - Kolom input Nama Pengguna (Username) & kata sandi
    - Tombol Login
    - Pesan kesalahan jika login gagal
+   ![Screenshot hasil](screenshots/loginpage.png)
 
 2. **POS Dashboard**
    - Daftar produk dengan kategori
@@ -1944,40 +1943,77 @@ TOTAL:                      14/14 ✅ ALL PASSED
    - Perhitungan total belanja secara real-time
    - Pilihan metode pembayaran
    - Tombol Checkout
+   ![Screenshot hasil](screenshots/dashboardPOS.png)
 
 3. **Proses Pembayaran**
    - Pembayaran tunai dengan perhitungan kembalian
    - Verifikasi saldo E-Wallet
    - Konfirmasi transaksi
+   ![Screenshot hasil](screenshots/checkout.png)
 
 4. **Pembuatan Struk**
    - Struk detail berisi daftar item
    - Stempel tanggal/waktu
    - Total jumlah yang dibayar
    - Nama Kasir & ID Transaksi
+     
+   ![Screenshot hasil](screenshots/struk.png)
 
 5. **Admin Dashboard**
    - Manajemen Produk (Tambah/Ubah/Hapus)
    - Laporan penjualan (harian/bulanan)
    - Manajemen User
+   ![Screenshot hasil](screenshots/dashboaradmin.png)
 
 6. **Manajemen User**
    - Tambah/Hapus User
    - Pengelolaan Akun Terpusat
    - Pengaturan role pengguna
+   ![Screenshot hasil](screenshots/manajemenuser.png)
 
 8. **Manajemen Produk**
    - Kode produk, nama, dan kategori
    - Input harga dengan validasi
    - Manajemen stok & tingkat pemesanan ulang (reorder level)
+   ![Screenshot hasil](screenshots/manajemenproduk.png)
 
 9. **Laporan Transaksi & Penjualan**
    - Filter tanggal
    - Ringkasan keuangan
    - Tabel detail
-
+   ![Screenshot hasil](screenshots/laporan.png)
 
 ---
+
+#### **Manual Book Penggunaan Aplikasi**
+
+**User Manual: Agri-POS Usage Guide**
+
+**Untuk Kasir:**
+1. Login dengan username & password
+2. View produk yang tersedia
+3. Select produk dan input quantity
+4. Add to cart
+5. Review cart items
+6. Apply discount jika ada (optional)
+7. Select payment method (CASH atau EWALLET)
+8. Input payment amount
+9. Confirm pembayaran
+10. Get receipt
+
+**Untuk Admin:**
+1. Login dengan admin credentials
+2. Access Admin Dashboard
+3. Manage Products (Add/Edit/Delete)
+4. Monitor Stock Status & Alerts
+5. View Sales Reports
+6. Check Audit Logs
+7. Logout
+
+**Troubleshooting:**
+- Connection error: Ensure PostgreSQL running
+- Login failed: Check username/password
+- Database error: Check database permissions
 
 ## F. ANALISIS KUALITAS & KETERPADUAN SISTEM
 
@@ -2096,7 +2132,6 @@ Service Call → DAO Method → JDBC → Database → ResultSet → Model Object
 
 #### **Fitur Tambahan - 100% Complete:**
 - ✅ **OFR-2: Diskon/Promo** - Strategy pattern (percentage & fixed amount)
-- ✅ **OFR-4: Inventori Lanjutan** - Auto-update status (LOW_STOCK, DISCONTINUED)
 - ✅ **OFR-6: Audit Log** - Complete activity logging (login, create, update, delete)
 
 #### **Quality Deliverables:**
@@ -2186,54 +2221,6 @@ Tim **telah menunjukkan kesiapan untuk enterprise application development** deng
 
 ---
 
-## LAMPIRAN
-
-#### **Slide Presentasi**
-Slide presentasi mencakup:
-- Introduction: Business problem & motivation
-- Architecture: Layered design, technology stack
-- Design Patterns: Singleton, Strategy, DAO, MVC
-- SOLID Principles: Implementation examples
-- Features Demo: Walkthrough dari main use cases
-- Testing: Unit tests & manual tests
-- Kesimpulan: Lessons learned & future enhancements
-
-#### **Bukti Presentasi & Demo**
-(Tangkapan layar atau tautan video demonstrasi:)
-- Login demo
-- Kasir POS flow (add product → checkout → payment)
-- Admin dashboard (product management, audit logs)
-- Error handling (invalid payment, validation errors)
-
-#### **Manual Book Penggunaan Aplikasi**
-
-**User Manual: Agri-POS Usage Guide**
-
-**Untuk Kasir:**
-1. Login dengan username & password
-2. View produk yang tersedia
-3. Select produk dan input quantity
-4. Add to cart
-5. Review cart items
-6. Apply discount jika ada (optional)
-7. Select payment method (CASH atau EWALLET)
-8. Input payment amount
-9. Confirm pembayaran
-10. Get receipt
-
-**Untuk Admin:**
-1. Login dengan admin credentials
-2. Access Admin Dashboard
-3. Manage Products (Add/Edit/Delete)
-4. Monitor Stock Status & Alerts
-5. View Sales Reports
-6. Check Audit Logs
-7. Logout
-
-**Troubleshooting:**
-- Connection error: Ensure PostgreSQL running
-- Login failed: Check username/password
-- Database error: Check database permissions
 
 #### **GitHub Repository**
 Link: https://github.com/Masterq15/oop-202501-240202882

@@ -21,6 +21,7 @@ com\upb\agripos\view\PosView$LogoutCallback.class
 com\upb\agripos\Launcher.class
 com\upb\agripos\dao\impl\UserDAOImpl.class
 com\upb\agripos\controller\ProductController.class
+com\upb\agripos\util\DatabaseConnection.class
 com\upb\agripos\service\TransactionServicePersonA.class
 com\upb\agripos\dao\impl\DatabaseIntegrationTest.class
 com\upb\agripos\QuickPaymentTest.class

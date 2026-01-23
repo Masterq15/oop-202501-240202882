@@ -1933,48 +1933,49 @@ TOTAL:                      14/14 ✅ ALL PASSED
 
 #### **Screenshots:**
 
-1. **Login Screen** - User authentication interface
-   - Username & password input fields
-   - Login button
-   - Error messages for failed login
+1. **Login Screen** 
+   - Kolom input Nama Pengguna (Username) & kata sandi
+   - Tombol Login
+   - Pesan kesalahan jika login gagal
 
-2. **POS Dashboard** - Kasir main interface
-   - Product list with categories
-   - Shopping cart display
-   - Running total calculation
-   - Payment method selection
-   - Checkout button
+2. **POS Dashboard**
+   - Daftar produk dengan kategori
+   - Tampilan keranjang belanja
+   - Perhitungan total belanja secara real-time
+   - Pilihan metode pembayaran
+   - Tombol Checkout
 
-3. **Payment Processing** - Payment flow
-   - Cash payment with change calculation
-   - E-Wallet balance verification
-   - Transaction confirmation
+3. **Proses Pembayaran**
+   - Pembayaran tunai dengan perhitungan kembalian
+   - Verifikasi saldo E-Wallet
+   - Konfirmasi transaksi
 
-4. **Receipt Generation** - Post-transaction
-   - Detailed receipt with items
-   - Date/time stamp
-   - Total amount paid
-   - Kasir name & transaction ID
+4. **Pembuatan Struk**
+   - Struk detail berisi daftar item
+   - Stempel tanggal/waktu
+   - Total jumlah yang dibayar
+   - Nama Kasir & ID Transaksi
 
-5. **Admin Dashboard** - Administrative interface
-   - Product management (Add/Edit/Delete)
-   - Stock monitoring with LOW_STOCK alerts
-   - Sales reports (daily/monthly)
-   - Audit log viewer
+5. **Admin Dashboard**
+   - Manajemen Produk (Tambah/Ubah/Hapus)
+   - Laporan penjualan (harian/bulanan)
+   - Manajemen User
 
-6. **Product Management** - Add/Edit product
-   - Product code, name, category
-   - Price input with validation
-   - Stock & reorder level management
+6. **Manajemen User**
+   - Tambah/Hapus User
+   - Pengelolaan Akun Terpusat
+   - Pengaturan role pengguna
 
-7. **Stock Alerts** - Low stock notification
-   - Color-coded status (GREEN=NORMAL, YELLOW=LOW_STOCK, RED=DISCONTINUED)
-   - Auto-update when stock falls below reorder level
+8. **Manajemen Produk**
+   - Kode produk, nama, dan kategori
+   - Input harga dengan validasi
+   - Manajemen stok & tingkat pemesanan ulang (reorder level)
 
-8. **Audit Logs** - Activity tracking
-   - User actions logged (login, create, update, delete)
-   - Timestamp & IP address
-   - Filterable by user, action, date
+9. **Laporan Transaksi & Penjualan**
+   - Filter tanggal
+   - Ringkasan keuangan
+   - Tabel detail
+
 
 ---
 

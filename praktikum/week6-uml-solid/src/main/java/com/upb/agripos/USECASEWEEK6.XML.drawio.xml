@@ -1,6 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.2.9" pages="4">
-  <diagram name="Halaman-1" id="q7sNa-ZQY8LLobtxlyPU">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" version="29.3.4" pages="6">
+  <diagram name="Page-1" id="eVr0HwmabunnHXr3U3l8">
+    <mxGraphModel dx="1251" dy="837" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="ADMIN" vertex="1">
+          <mxGeometry height="60" width="30" x="70" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="KASIR" vertex="1">
+          <mxGeometry height="55" width="30" x="70" y="745" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-3" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="logout" vertex="1">
+          <mxGeometry height="50" width="80" x="190" y="645" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-4" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Login" vertex="1">
+          <mxGeometry height="50" width="80" x="200" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-5" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-2" style="endArrow=classic;html=1;rounded=0;exitX=0.533;exitY=0.75;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" target="YlSYbDgKCABOlA4ekIfG-3" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="400" y="760" as="sourcePoint" />
+            <mxPoint x="450" y="710" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-6" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-2" style="endArrow=classic;html=1;rounded=0;exitX=0.7;exitY=0.7;exitDx=0;exitDy=0;exitPerimeter=0;entryX=-0.025;entryY=0.66;entryDx=0;entryDy=0;entryPerimeter=0;" target="YlSYbDgKCABOlA4ekIfG-4" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="230" y="812" as="sourcePoint" />
+            <mxPoint x="336" y="730" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-7" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-1" style="endArrow=classic;html=1;rounded=0;exitX=0.533;exitY=0.667;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="YlSYbDgKCABOlA4ekIfG-3" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="240" y="812" as="sourcePoint" />
+            <mxPoint x="346" y="730" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-8" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=0;exitX=0.533;exitY=0.667;exitDx=0;exitDy=0;exitPerimeter=0;" target="YlSYbDgKCABOlA4ekIfG-4" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="90" y="480" as="sourcePoint" />
+            <mxPoint x="254" y="765" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-9" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Lihat Laporan" vertex="1">
+          <mxGeometry height="50" width="80" x="210" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-10" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Kelola Produk(CRUD)" vertex="1">
+          <mxGeometry height="50" width="100" x="210" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-11" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-1" style="endArrow=classic;html=1;rounded=0;exitX=0.433;exitY=0.65;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="YlSYbDgKCABOlA4ekIfG-9" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="80" y="420" as="sourcePoint" />
+            <mxPoint x="130" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-12" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="YlSYbDgKCABOlA4ekIfG-10" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="90" y="480" as="sourcePoint" />
+            <mxPoint x="247" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-13" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Proses checkout" vertex="1">
+          <mxGeometry height="50" width="80" x="340" y="695" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-14" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0.088;entryY=0.36;entryDx=0;entryDy=0;entryPerimeter=0;" target="YlSYbDgKCABOlA4ekIfG-25" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="90" y="780" as="sourcePoint" />
+            <mxPoint x="266" y="740" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-15" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Cetak Struk" vertex="1">
+          <mxGeometry height="50" width="80" x="180" y="830" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-16" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-2" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.38;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.6;exitY=0.717;exitDx=0;exitDy=0;exitPerimeter=0;" target="YlSYbDgKCABOlA4ekIfG-15" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="100" y="790" as="sourcePoint" />
+            <mxPoint x="240" y="770" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-17" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Bayar tunai" vertex="1">
+          <mxGeometry height="50" width="80" x="480" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-18" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Bayar E-Wallet" vertex="1">
+          <mxGeometry height="50" width="80" x="385" y="805" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-21" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;strokeColor=default;fillColor=none;" value="" vertex="1">
+          <mxGeometry height="510" width="510" x="110" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-23" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-18" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="YlSYbDgKCABOlA4ekIfG-13" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="830" as="sourcePoint" />
+            <mxPoint x="280" y="830" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-24" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-17" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="YlSYbDgKCABOlA4ekIfG-13" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="477" y="876" as="sourcePoint" />
+            <mxPoint x="320" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-25" parent="1" style="ellipse;whiteSpace=wrap;html=1;" value="Checkout &amp;amp; Process Payment" vertex="1">
+          <mxGeometry height="50" width="130" x="175" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="YlSYbDgKCABOlA4ekIfG-35" edge="1" parent="1" source="YlSYbDgKCABOlA4ekIfG-25" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;curved=0;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=0;" target="YlSYbDgKCABOlA4ekIfG-13" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="370" y="936" as="sourcePoint" />
+            <mxPoint x="504" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Page-2" id="xVQnfCXHJk_rhhRDd50Z">
+    <mxGraphModel dx="702" dy="656" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Halaman-1" id="Yvp3YSUJvx_zGwCoq5yz">
     <mxGraphModel dx="1426" dy="-2650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -280,7 +398,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="XmfJvOgWRkvfKHy9CObL" name="Halaman-2">
+  <diagram name="Halaman-2" id="_db48v0rK3YIsrKQdG5e">
     <mxGraphModel dx="1042" dy="596" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -436,7 +554,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="YJi5qVNgaBHcCFSKkntE" name="Halaman-3">
+  <diagram name="Halaman-3" id="vV-0u3YFDrmiUvzWkfog">
     <mxGraphModel dx="3033" dy="1987" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -683,7 +801,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="uwBnkErmJP6aabge3QJV" name="Halaman-4">
+  <diagram name="Halaman-4" id="NnWx530oiLfh5AwBYSQm">
     <mxGraphModel dx="3080" dy="857" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />

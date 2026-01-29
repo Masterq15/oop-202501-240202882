@@ -1,130 +1,184 @@
 package com.upb.agripos.controller;
 
+import com.upb.agripos.exception.OutOfStockException;
+import com.upb.agripos.exception.ValidationException;
 import com.upb.agripos.model.Product;
+import com.upb.agripos.service.CartService;
 import com.upb.agripos.service.ProductService;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
+import java.util.List;
+
+/**
+ * ProductController
+ * Controller untuk manajemen produk
+ */
 public class ProductController {
     private ProductService productService;
-    private ObservableList<Product> productList;
+    private ProductListener listener;
+
+    public interface ProductListener {
+        void onProductsLoaded(List<Product> products);
+        void onProductAdded(Product product);
+        void onProductUpdated(Product product);
+        void onProductDeleted(int productId);
+        void onError(String errorMessage);
+    }
+
+    public ProductController() {
+        this.productService = new ProductService();
+    }
 
     public ProductController(ProductService productService) {
         this.productService = productService;
-        this.productList = FXCollections.observableArrayList();
-        loadProducts(); // Load initial data
     }
 
-    // Load products from database
-    public void loadProducts() {
-        productList.clear();
-        productList.addAll(productService.getAllProducts());
+    public void setProductListener(ProductListener listener) {
+        this.listener = listener;
     }
 
-    // Add new product
-    public boolean addProduct(String code, String name, String category, String priceStr, String stockStr) {
+    /**
+     * FR-1: Lihat Daftar Produk
+     */
+    public void loadAllProducts() {
         try {
-            // Parse input
+            List<Product> products = productService.getAllProducts();
+            if (listener != null) {
+                listener.onProductsLoaded(products);
+            }
+        } catch (Exception e) {
+            if (listener != null) {
+                listener.onError("Gagal memuat data produk: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * FR-1: Tambah Produk
+     */
+    public void handleAddProduct(String code, String name, String category, String priceStr, String stockStr) {
+        try {
+            // Validasi dan konversi input
+            if (code == null || code.trim().isEmpty()) {
+                throw new ValidationException("Kode produk tidak boleh kosong");
+            }
+            if (priceStr == null || priceStr.trim().isEmpty()) {
+                throw new ValidationException("Harga tidak boleh kosong");
+            }
+            if (stockStr == null || stockStr.trim().isEmpty()) {
+                throw new ValidationException("Stok tidak boleh kosong");
+            }
+
             double price = Double.parseDouble(priceStr);
             int stock = Integer.parseInt(stockStr);
 
-            // Create product object
-            Product product = new Product(code, name, category, price, stock);
+            productService.addProduct(code, name, category, price, stock);
 
-            // Add through service
-            boolean success = productService.addProduct(product);
-            
-            if (success) {
-                loadProducts(); // Refresh list
+            if (listener != null) {
+                Product newProduct = productService.findProductByCode(code);
+                listener.onProductAdded(newProduct);
             }
-            
-            return success;
+
+        } catch (ValidationException e) {
+            if (listener != null) {
+                listener.onError(e.getMessage());
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Error: Format angka tidak valid!");
+            if (listener != null) {
+                listener.onError("Format harga atau stok tidak valid");
+            }
+        } catch (Exception e) {
+            if (listener != null) {
+                listener.onError("Error menambah produk: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * FR-1: Ubah Produk
+     */
+    public void handleUpdateProduct(int id, String code, String name, String category, String priceStr, String stockStr) {
+        try {
+            double price = Double.parseDouble(priceStr);
+            int stock = Integer.parseInt(stockStr);
+
+            productService.updateProduct(id, code, name, category, price, stock);
+
+            if (listener != null) {
+                Product updated = productService.findProductById(id);
+                listener.onProductUpdated(updated);
+            }
+
+        } catch (ValidationException e) {
+            if (listener != null) {
+                listener.onError(e.getMessage());
+            }
+        } catch (Exception e) {
+            if (listener != null) {
+                listener.onError("Error mengubah produk: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * FR-1: Hapus Produk
+     */
+    public void handleDeleteProduct(int id) {
+        try {
+            productService.deleteProduct(id);
+            if (listener != null) {
+                listener.onProductDeleted(id);
+            }
+        } catch (ValidationException e) {
+            if (listener != null) {
+                listener.onError(e.getMessage());
+            }
+        } catch (Exception e) {
+            if (listener != null) {
+                listener.onError("Error menghapus produk: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * FR-2: Validasi stok sebelum add ke keranjang
+     */
+    public boolean validateProductStock(int productId, int quantity) {
+        try {
+            productService.validateStock(productId, quantity);
+            return true;
+        } catch (OutOfStockException e) {
+            if (listener != null) {
+                listener.onError(e.getMessage());
+            }
             return false;
         }
     }
 
-    // Get observable list for ListView binding
-    public ObservableList getProductList() {
-        return productList;
-    }
-
-    // Get product by code
+    /**
+     * Dapatkan produk berdasarkan kode
+     */
     public Product getProductByCode(String code) {
-        return productService.getProductByCode(code);
-    }
-
-    // Delete product
-    public boolean deleteProduct(String code) {
-        boolean success = productService.deleteProduct(code);
-        if (success) {
-            loadProducts();
-        }
-        return success;
-    }
-
-    // Tambah stok produk secara manual (untuk produk yang stoknya habis/0)
-    public boolean addStockManually(String code, String additionalStockStr) {
         try {
-            // Validasi input
-            if (code == null || code.trim().isEmpty()) {
-                System.out.println("Error: Kode produk tidak boleh kosong!");
-                return false;
+            return productService.findProductByCode(code);
+        } catch (Exception e) {
+            if (listener != null) {
+                listener.onError("Produk tidak ditemukan: " + code);
             }
-
-            int additionalStock = Integer.parseInt(additionalStockStr);
-
-            // Panggil service untuk menambah stok
-            boolean success = productService.addStock(code, additionalStock);
-            
-            if (success) {
-                loadProducts(); // Refresh list setelah penambahan stok
-            }
-            
-            return success;
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Jumlah stok harus berupa angka!");
-            return false;
+            return null;
         }
     }
 
-    // Cek apakah produk stoknya habis
-    public boolean isOutOfStock(String code) {
-        return productService.isOutOfStock(code);
-    }
-
-    // Cek apakah stok produk di bawah batas minimum
-    public boolean isLowStock(String code, int minStock) {
-        return productService.isLowStock(code, minStock);
-    }
-
-    // Update product dengan stok baru
-    public boolean updateProductWithStock(String code, String stockStr) {
+    /**
+     * Dapatkan produk berdasarkan ID
+     */
+    public Product getProductById(int id) {
         try {
-            Product product = productService.getProductByCode(code);
-            if (product == null) {
-                System.out.println("Error: Produk tidak ditemukan!");
-                return false;
+            return productService.findProductById(id);
+        } catch (Exception e) {
+            if (listener != null) {
+                listener.onError("Produk tidak ditemukan");
             }
-
-            int newStock = Integer.parseInt(stockStr);
-            if (newStock < 0) {
-                System.out.println("Error: Stok tidak boleh negatif!");
-                return false;
-            }
-
-            product.setStock(newStock);
-            boolean success = productService.updateProduct(product);
-            
-            if (success) {
-                loadProducts(); // Refresh list
-            }
-            
-            return success;
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Stok harus berupa angka!");
-            return false;
+            return null;
         }
     }
 }

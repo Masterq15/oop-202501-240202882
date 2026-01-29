@@ -2,104 +2,187 @@ package com.upb.agripos.service;
 
 import com.upb.agripos.dao.ProductDAO;
 import com.upb.agripos.dao.ProductDAOImpl;
+import com.upb.agripos.exception.OutOfStockException;
+import com.upb.agripos.exception.ValidationException;
 import com.upb.agripos.model.Product;
-import java.sql.Connection;
+
 import java.util.List;
 
+/**
+ * ProductService
+ * Service layer untuk business logic produk
+ * 
+ * Implementasi SOLID:
+ * - SRP: Hanya menangani logika bisnis produk
+ * - DIP: Menggunakan interface ProductDAO, bukan implementasi
+ */
 public class ProductService {
     private ProductDAO productDAO;
 
-    public ProductService(Connection connection) {
-        this.productDAO = new ProductDAOImpl(connection);
+    public ProductService() {
+        this.productDAO = new ProductDAOImpl();
     }
 
-    // Business Logic: Insert Product dengan validasi
-    public boolean addProduct(Product product) {
-        // Validasi: Cek apakah kode sudah ada
-        Product existing = productDAO.findById(product.getCode());
-        if (existing != null) {
-            System.out.println("Error: Kode produk sudah ada!");
-            return false;
+    // Untuk testing: allow dependency injection
+    public ProductService(ProductDAO productDAO) {
+        this.productDAO = productDAO;
+    }
+
+    /**
+     * FR-1: Manajemen Produk - Lihat Daftar Produk
+     */
+    public List<Product> getAllProducts() throws Exception {
+        try {
+            return productDAO.findAll();
+        } catch (Exception e) {
+            throw new Exception("Gagal mengambil data produk: " + e.getMessage(), e);
         }
+    }
 
-        // Validasi: Harga dan stok tidak boleh negatif
-        if (product.getPrice() < 0) {
-            System.out.println("Error: Harga tidak boleh negatif!");
-            return false;
+    /**
+     * FR-1: Manajemen Produk - Tambah Produk
+     */
+    public void addProduct(String code, String name, String category, double price, int stock) 
+            throws ValidationException {
+        try {
+            // Validasi input
+            if (code == null || code.trim().isEmpty()) {
+                throw new ValidationException("Kode produk tidak boleh kosong");
+            }
+            if (name == null || name.trim().isEmpty()) {
+                throw new ValidationException("Nama produk tidak boleh kosong");
+            }
+            if (category == null || category.trim().isEmpty()) {
+                throw new ValidationException("Kategori produk tidak boleh kosong");
+            }
+            if (price <= 0) {
+                throw new ValidationException("Harga harus lebih dari 0");
+            }
+            if (stock < 0) {
+                throw new ValidationException("Stok tidak boleh negatif");
+            }
+
+            // Cek duplikasi kode
+            if (productDAO.findByCode(code) != null) {
+                throw new ValidationException("Kode produk sudah ada: " + code);
+            }
+
+            Product product = new Product(code, name, category, price, stock);
+            if (!productDAO.save(product)) {
+                throw new ValidationException("Gagal menyimpan produk");
+            }
+
+        } catch (ValidationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ValidationException("Error saat menambah produk: " + e.getMessage(), e);
         }
+    }
 
-        if (product.getStock() < 0) {
-            System.out.println("Error: Stok tidak boleh negatif!");
-            return false;
+    /**
+     * FR-1: Manajemen Produk - Ubah Produk
+     */
+    public void updateProduct(int id, String code, String name, String category, double price, int stock) 
+            throws ValidationException {
+        try {
+            // Validasi input
+            if (code == null || code.trim().isEmpty()) {
+                throw new ValidationException("Kode produk tidak boleh kosong");
+            }
+            if (name == null || name.trim().isEmpty()) {
+                throw new ValidationException("Nama produk tidak boleh kosong");
+            }
+            if (price <= 0) {
+                throw new ValidationException("Harga harus lebih dari 0");
+            }
+            if (stock < 0) {
+                throw new ValidationException("Stok tidak boleh negatif");
+            }
+
+            Product product = new Product(id, code, name, category, price, stock);
+            if (!productDAO.update(product)) {
+                throw new ValidationException("Gagal mengubah produk");
+            }
+
+        } catch (ValidationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ValidationException("Error saat mengubah produk: " + e.getMessage(), e);
         }
-
-        // Insert ke database
-        return productDAO.insert(product);
     }
 
-    // Get all products
-    public List getAllProducts() {
-        return productDAO.findAll();
-    }
-
-    // Find by code
-    public Product getProductByCode(String code) {
-        return productDAO.findById(code);
-    }
-
-    // Update product
-    public boolean updateProduct(Product product) {
-        // Validasi sebelum update
-        if (product.getPrice() < 0 || product.getStock() < 0) {
-            System.out.println("Error: Harga dan stok tidak boleh negatif!");
-            return false;
+    /**
+     * FR-1: Manajemen Produk - Hapus Produk
+     */
+    public void deleteProduct(int id) throws ValidationException {
+        try {
+            if (!productDAO.delete(id)) {
+                throw new ValidationException("Gagal menghapus produk");
+            }
+        } catch (ValidationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ValidationException("Error saat menghapus produk: " + e.getMessage(), e);
         }
-        return productDAO.update(product);
     }
 
-    // Delete product
-    public boolean deleteProduct(String code) {
-        return productDAO.delete(code);
-    }
-
-    // Penambahan stok manual (untuk produk yang habis/stok 0)
-    public boolean addStock(String code, int additionalStock) {
-        // Validasi stok yang ditambahkan harus positif
-        if (additionalStock <= 0) {
-            System.out.println("Error: Jumlah stok yang ditambahkan harus lebih dari 0!");
-            return false;
+    /**
+     * FR-2: Transaksi Penjualan - Validasi Stok
+     */
+    public void validateStock(int productId, int requestedQuantity) throws OutOfStockException {
+        try {
+            Product product = productDAO.findById(productId);
+            if (product == null) {
+                throw new OutOfStockException("Produk tidak ditemukan");
+            }
+            if (product.getStock() < requestedQuantity) {
+                throw new OutOfStockException(
+                    "Stok tidak cukup untuk produk " + product.getName() + 
+                    ". Tersedia: " + product.getStock() + ", diminta: " + requestedQuantity
+                );
+            }
+        } catch (OutOfStockException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new OutOfStockException("Error validasi stok: " + e.getMessage(), e);
         }
-
-        // Cari produk berdasarkan kode
-        Product product = productDAO.findById(code);
-        if (product == null) {
-            System.out.println("Error: Produk dengan kode " + code + " tidak ditemukan!");
-            return false;
-        }
-
-        // Update stok produk
-        int newStock = product.getStock() + additionalStock;
-        product.setStock(newStock);
-
-        // Update ke database
-        boolean success = productDAO.update(product);
-        if (success) {
-            System.out.println("Stok produk " + product.getName() + " berhasil ditambahkan!");
-            System.out.println("Stok lama: " + (product.getStock() - additionalStock) + 
-                             " → Stok baru: " + newStock);
-        }
-        return success;
     }
 
-    // Cek apakah produk stoknya habis (0)
-    public boolean isOutOfStock(String code) {
-        Product product = productDAO.findById(code);
-        return product != null && product.getStock() == 0;
+    /**
+     * FR-2: Transaksi Penjualan - Update Stok
+     */
+    public void updateProductStock(int productId, int quantitySold) throws Exception {
+        try {
+            Product product = productDAO.findById(productId);
+            if (product == null) {
+                throw new Exception("Produk tidak ditemukan");
+            }
+            
+            int newStock = product.getStock() - quantitySold;
+            if (newStock < 0) {
+                throw new Exception("Stok akan negatif");
+            }
+
+            if (!productDAO.updateStock(productId, newStock)) {
+                throw new Exception("Gagal update stok");
+            }
+
+        } catch (Exception e) {
+            throw new Exception("Error update stok: " + e.getMessage(), e);
+        }
     }
 
-    // Cek apakah stok produk di bawah batas minimum (misal: < 10)
-    public boolean isLowStock(String code, int minStock) {
-        Product product = productDAO.findById(code);
-        return product != null && product.getStock() < minStock;
+    /**
+     * Pencarian produk berdasarkan kode
+     */
+    public Product findProductByCode(String code) throws Exception {
+        return productDAO.findByCode(code);
+    }
+
+    /**
+     * Pencarian produk berdasarkan ID
+     */
+    public Product findProductById(int id) throws Exception {
+        return productDAO.findById(id);
     }
 }
